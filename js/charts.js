@@ -1,8 +1,8 @@
 /**
- * Chart.js Integration for ESP32 IoT Dashboard - Minecraft Pixel Edition
+ * Chart.js Integration for ESP32 IoT Dashboard - Modern Cyber-Pixel Edition
  * 
- * Renders retro 8-bit telemetry curves with square pixel markers,
- * pixel fonts (Press Start 2P, Silkscreen, VT323), and Minecraft color accents.
+ * Renders high-frequency telemetry history with glowing neon curves,
+ * sharp multi-axis scales, responsive tooltips, and monospaced timestamp ticks.
  */
 
 class TelemetryCharts {
@@ -18,18 +18,18 @@ class TelemetryCharts {
 
     const chartCtx = ctx.getContext("2d");
 
-    // Pixel gradient fills
+    // Glowing gradient fills
     const tempGrad = chartCtx.createLinearGradient(0, 0, 0, 300);
-    tempGrad.addColorStop(0, "rgba(255, 51, 51, 0.3)");
-    tempGrad.addColorStop(1, "rgba(255, 51, 51, 0.0)");
+    tempGrad.addColorStop(0, "rgba(255, 51, 85, 0.35)");
+    tempGrad.addColorStop(1, "rgba(255, 51, 85, 0.0)");
 
     const humiGrad = chartCtx.createLinearGradient(0, 0, 0, 300);
-    humiGrad.addColorStop(0, "rgba(56, 189, 248, 0.3)");
-    humiGrad.addColorStop(1, "rgba(56, 189, 248, 0.0)");
+    humiGrad.addColorStop(0, "rgba(0, 242, 254, 0.35)");
+    humiGrad.addColorStop(1, "rgba(0, 242, 254, 0.0)");
 
     const lightGrad = chartCtx.createLinearGradient(0, 0, 0, 300);
-    lightGrad.addColorStop(0, "rgba(255, 170, 0, 0.3)");
-    lightGrad.addColorStop(1, "rgba(255, 170, 0, 0.0)");
+    lightGrad.addColorStop(0, "rgba(251, 191, 36, 0.35)");
+    lightGrad.addColorStop(1, "rgba(251, 191, 36, 0.0)");
 
     this.gradients = {
       temp: tempGrad,
@@ -47,8 +47,8 @@ class TelemetryCharts {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 300,
-          easing: "linear"
+          duration: 350,
+          easing: "easeOutQuart"
         },
         interaction: {
           mode: "index",
@@ -59,38 +59,39 @@ class TelemetryCharts {
             display: true,
             position: "top",
             labels: {
-              color: "#ffff55",
+              color: "#cbd5e1",
               font: {
-                family: "'Press Start 2P', monospace",
-                size: 9
+                family: "'Silkscreen', monospace",
+                size: 10,
+                weight: "700"
               },
               usePointStyle: true,
-              pointStyle: "rect",
-              padding: 16
+              pointStyle: "circle",
+              padding: 18
             }
           },
           tooltip: {
-            backgroundColor: "#181818",
-            titleColor: "#ffff55",
-            bodyColor: "#ffffff",
-            borderColor: "#3a3a3a",
-            borderWidth: 2,
-            padding: 10,
-            boxPadding: 4,
-            cornerRadius: 0,
-            titleFont: { family: "'Press Start 2P', monospace", size: 10 },
-            bodyFont: { family: "'Silkscreen', monospace", size: 11 }
+            backgroundColor: "rgba(13, 20, 36, 0.95)",
+            titleColor: "#00f2fe",
+            bodyColor: "#f8fafc",
+            borderColor: "rgba(255, 255, 255, 0.15)",
+            borderWidth: 1,
+            padding: 12,
+            boxPadding: 6,
+            cornerRadius: 8,
+            titleFont: { family: "'JetBrains Mono', monospace", size: 12, weight: "600" },
+            bodyFont: { family: "'Plus Jakarta Sans', sans-serif", size: 13 }
           }
         },
         scales: {
           x: {
             grid: {
-              color: "rgba(255, 255, 255, 0.06)",
+              color: "rgba(255, 255, 255, 0.04)",
               drawBorder: false
             },
             ticks: {
-              color: "#aaaaaa",
-              font: { family: "'VT323', monospace", size: 14 },
+              color: "#64748b",
+              font: { family: "'JetBrains Mono', monospace", size: 11 },
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 8
@@ -102,16 +103,16 @@ class TelemetryCharts {
             title: {
               display: true,
               text: "TEMP (°C) / HUMI (%)",
-              color: "#aaaaaa",
-              font: { size: 9, family: "'Press Start 2P', monospace" }
+              color: "#94a3b8",
+              font: { size: 10, family: "'Silkscreen', monospace" }
             },
             grid: {
-              color: "rgba(255, 255, 255, 0.06)",
+              color: "rgba(255, 255, 255, 0.05)",
               drawBorder: false
             },
             ticks: {
-              color: "#ffffff",
-              font: { family: "'VT323', monospace", size: 14 }
+              color: "#cbd5e1",
+              font: { family: "'JetBrains Mono', monospace", size: 11 }
             },
             suggestedMin: 20,
             suggestedMax: 85
@@ -122,16 +123,16 @@ class TelemetryCharts {
             title: {
               display: true,
               text: "LIGHT (LX)",
-              color: "#ffaa00",
-              font: { size: 9, family: "'Press Start 2P', monospace" }
+              color: "#fbbf24",
+              font: { size: 10, family: "'Silkscreen', monospace" }
             },
             grid: {
               drawOnChartArea: false,
               drawBorder: false
             },
             ticks: {
-              color: "#ffaa00",
-              font: { family: "'VT323', monospace", size: 14 }
+              color: "#fbbf24",
+              font: { family: "'JetBrains Mono', monospace", size: 11 }
             },
             suggestedMin: 0,
             suggestedMax: 1000
@@ -175,45 +176,42 @@ class TelemetryCharts {
         id: "temp",
         label: "TEMP (°C)",
         data: tempData,
-        borderColor: "#ff3333",
+        borderColor: "#ff3355",
         backgroundColor: this.gradients.temp,
-        borderWidth: 2,
-        tension: 0.1,
+        borderWidth: 2.5,
+        tension: 0.35,
         fill: true,
-        pointStyle: "rect",
-        pointRadius: 4,
-        pointHoverRadius: 7,
-        pointBackgroundColor: "#ff3333",
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#ff3355",
         yAxisID: "yTemp"
       },
       {
         id: "humi",
-        label: "HUMI (%)",
+        label: "HUMIDITY (%)",
         data: humiData,
-        borderColor: "#38bdf8",
+        borderColor: "#00f2fe",
         backgroundColor: this.gradients.humi,
-        borderWidth: 2,
-        tension: 0.1,
+        borderWidth: 2.5,
+        tension: 0.35,
         fill: true,
-        pointStyle: "rect",
-        pointRadius: 4,
-        pointHoverRadius: 7,
-        pointBackgroundColor: "#38bdf8",
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#00f2fe",
         yAxisID: "yTemp"
       },
       {
         id: "light",
         label: "LIGHT (LX)",
         data: lightData,
-        borderColor: "#ffaa00",
+        borderColor: "#fbbf24",
         backgroundColor: this.gradients.light,
-        borderWidth: 2,
-        tension: 0.1,
+        borderWidth: 2.5,
+        tension: 0.35,
         fill: true,
-        pointStyle: "rect",
-        pointRadius: 4,
-        pointHoverRadius: 7,
-        pointBackgroundColor: "#ffaa00",
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#fbbf24",
         yAxisID: "yLight"
       }
     ];
