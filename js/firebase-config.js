@@ -9,12 +9,9 @@
 const DEFAULT_FIREBASE_CONFIG = {
   // Configured with user's Firebase RTDB instance
   databaseURL: "https://iot-104-a634e-default-rtdb.asia-southeast1.firebasedatabase.app",
-  apiKey: "YOUR_API_KEY",
-  authDomain: "iot-104-a634e.firebaseapp.com",
   projectId: "iot-104-a634e",
-  storageBucket: "iot-104-a634e.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  authDomain: "iot-104-a634e.firebaseapp.com",
+  storageBucket: "iot-104-a634e.appspot.com"
 };
 
 // Device & Target Path Configuration
