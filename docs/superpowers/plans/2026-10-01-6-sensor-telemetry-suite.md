@@ -27,7 +27,7 @@
 **Interfaces:**
 - Produces: JSON payloads containing `temp`, `humi`, `light`, `press`, `co2`, `noise`, `timestamp`.
 
-- [ ] **Step 1: Update `esphome/firebase-final.yaml` with 6 sensors**
+- [x] **Step 1: Update `esphome/firebase-final.yaml` with 6 sensors**
 
 ```yaml
 # Add 3 new template sensors:
@@ -70,10 +70,10 @@ root["noise"] = id(noise).state;
 root["timestamp"] = id(sntp_time).now().timestamp;
 ```
 
-- [ ] **Step 2: Update `esphome/firebase-l5.yaml` and `firebase-l2.yaml`**
+- [x] **Step 2: Update `esphome/firebase-l5.yaml` and `firebase-l2.yaml`**
 Repeat the 6-sensor definitions across L2 and L5 configurations for consistency.
 
-- [ ] **Step 3: Commit firmware updates**
+- [x] **Step 3: Commit firmware updates**
 
 ```bash
 git add esphome/
@@ -88,13 +88,13 @@ git commit -m "feat(esphome): add 6-sensor environmental suite (temp, humi, ligh
 - Modify: `css/style.css`
 
 **Interfaces:**
-- Produces: CSS classes `.card-press`, `.card-co2`, `.card-noise`, `.meter-press`, `.meter-co2`, `.meter-noise`, `.kpi-grid-3x2`, `.system-health-bar`.
+- Produces: CSS classes `.card-press`, `.card-co2`, `.card-noise`, `.meter-press`, `.meter-co2`, `.meter-noise`, `.kpi-grid`, `.system-health-bar`.
 
-- [ ] **Step 1: Add 3x2 Grid and System Health Bar styles**
+- [x] **Step 1: Add 3x2 Grid and System Health Bar styles**
 
 ```css
 /* 3x2 Matrix Grid */
-.kpi-grid-3x2 {
+.kpi-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
@@ -102,13 +102,13 @@ git commit -m "feat(esphome): add 6-sensor environmental suite (temp, humi, ligh
 }
 
 @media (max-width: 1024px) {
-  .kpi-grid-3x2 {
+  .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 640px) {
-  .kpi-grid-3x2 {
+  .kpi-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -129,7 +129,7 @@ git commit -m "feat(esphome): add 6-sensor environmental suite (temp, humi, ligh
 }
 ```
 
-- [ ] **Step 2: Add color accents & 5-segment meters for Pressure, CO2, and Noise**
+- [x] **Step 2: Add color accents & 5-segment meters for Pressure, CO2, and Noise**
 
 ```css
 /* Amethyst Pressure */
@@ -169,7 +169,7 @@ git commit -m "feat(esphome): add 6-sensor environmental suite (temp, humi, ligh
 }
 ```
 
-- [ ] **Step 3: Commit CSS styles**
+- [x] **Step 3: Commit CSS styles**
 
 ```bash
 git add css/style.css
@@ -186,7 +186,7 @@ git commit -m "style(hud): add 3x2 matrix grid, system health bar, and 3 new sen
 **Interfaces:**
 - Produces: 6 KPI card elements (`valTemp`, `valHumi`, `valLight`, `valPress`, `valCo2`, `valNoise`), System Health bar, 7 chart filter buttons, 9-column table headers, and 6-input simulator drawer.
 
-- [ ] **Step 1: Replace KPI grid with System Health Bar + 3x2 Sensor Matrix in `index.html`**
+- [x] **Step 1: Replace KPI grid with System Health Bar + 3x2 Sensor Matrix in `index.html`**
 Include:
 - System Health HUD Bar (Device ID, Online status, Heartbeat meter, Relative time, Last Sync).
 - 6 Sensor Cards:
@@ -197,14 +197,14 @@ Include:
   5. Carbon Dioxide (`valCo2`, `meterCo2`, `minMaxCo2`, `badgeCo2`)
   6. Sound Noise Level (`valNoise`, `meterNoise`, `minMaxNoise`, `badgeNoise`)
 
-- [ ] **Step 2: Update Chart controls and Table headers**
+- [x] **Step 2: Update Chart controls and Table headers**
 - Add chart filter buttons: `ALL SENSORS`, `TEMP`, `HUMI`, `LIGHT`, `PRESS`, `CO2`, `NOISE`.
 - Update table headers to 9 columns: `DEVICE ID`, `TIMESTAMP (SNTP - ASIA/BANGKOK)`, `TEMPERATURE`, `HUMIDITY`, `LIGHT`, `PRESSURE`, `CO2`, `NOISE`, `STATUS`.
 
-- [ ] **Step 3: Update Simulator drawer with 6 inputs**
+- [x] **Step 3: Update Simulator drawer with 6 inputs**
 - Add inputs: `simTemp`, `simHumi`, `simLight`, `simPress`, `simCo2`, `simNoise`.
 
-- [ ] **Step 4: Commit HTML updates**
+- [x] **Step 4: Commit HTML updates**
 
 ```bash
 git add index.html
@@ -222,7 +222,7 @@ git commit -m "feat(ui): implement 3x2 sensor matrix, health bar, and 9-column t
 - Consumes: Firebase RTDB `/lab/<device>/latest` and `/history`.
 - Produces: Ingests 6 sensor fields (`temp`, `humi`, `light`, `press`, `co2`, `noise`) + `timestamp`.
 
-- [ ] **Step 1: Update history record parser in `FirebaseService.attachDeviceListeners`**
+- [x] **Step 1: Update history record parser in `FirebaseService.attachDeviceListeners`**
 
 ```javascript
 const hasTemp = item.temp !== undefined && item.temp !== null && !isNaN(Number(item.temp));
@@ -247,13 +247,13 @@ const record = {
 };
 ```
 
-- [ ] **Step 2: Update `simulateEsp32Upload()` to handle 6 sensor fields**
+- [x] **Step 2: Update `simulateEsp32Upload()` to handle 6 sensor fields**
 
 ```javascript
 async simulateEsp32Upload(temp, humi, light, press, co2, noise, customTimestamp = null)
 ```
 
-- [ ] **Step 3: Commit service layer changes**
+- [x] **Step 3: Commit service layer changes**
 
 ```bash
 git add js/firebase-service.js
@@ -268,16 +268,16 @@ git commit -m "feat(service): expand Firebase service parser and simulator for 6
 - Modify: `js/charts.js`
 
 **Interfaces:**
-- Produces: 6 Chart.js line datasets with multi-axis scales (`yTemp` and `yLight`) and mode filtering (`temp`, `humi`, `light`, `press`, `co2`, `noise`, `combined`).
+- Produces: 6 Chart.js line datasets with multi-axis scales (`yLeft` and `yRight`) and mode filtering (`temp`, `humi`, `light`, `press`, `co2`, `noise`, `combined`).
 
-- [ ] **Step 1: Add gradients & datasets for Pressure, CO2, and Noise in `TelemetryCharts`**
-- Purple gradient for `press` (Y-axis: `yLight` or dedicated scale).
-- Emerald gradient for `co2` (Y-axis: `yLight`).
-- Cyan/Blue gradient for `noise` (Y-axis: `yTemp`).
+- [x] **Step 1: Add gradients & datasets for Pressure, CO2, and Noise in `TelemetryCharts`**
+- Purple gradient for `press` (Y-axis: `yRight`).
+- Emerald gradient for `co2` (Y-axis: `yRight`).
+- Cyber Blue gradient for `noise` (Y-axis: `yLeft`).
 
-- [ ] **Step 2: Implement dynamic scale toggle for all 6 filter modes**
+- [x] **Step 2: Implement dynamic scale toggle for all 6 filter modes**
 
-- [ ] **Step 3: Commit chart updates**
+- [x] **Step 3: Commit chart updates**
 
 ```bash
 git add js/charts.js
@@ -294,17 +294,17 @@ git commit -m "feat(charts): add 6-sensor multi-axis dataset visualization and f
 **Interfaces:**
 - Produces: 6 KPI card updates, 5-segment meters, 9-column table rendering, 6-sensor CSV export, and simulator controls.
 
-- [ ] **Step 1: Update `handleLatestUpdate` to bind all 6 sensor cards and 5-segment meters**
+- [x] **Step 1: Update `handleLatestUpdate` to bind all 6 sensor cards and 5-segment meters**
 - Bind `press` (950–1050 hPa range) $\rightarrow$ `meterPress`
 - Bind `co2` (400–1200 ppm range) $\rightarrow$ `meterCo2`
 - Bind `noise` (30–90 dB range) $\rightarrow$ `meterNoise`
 
-- [ ] **Step 2: Update `renderHistoryTable` to render 9 columns**
+- [x] **Step 2: Update `renderHistoryTable` to render 9 columns**
 Render `temp`, `humi`, `light`, `press`, `co2`, `noise` with `N/A` fallback for legacy records.
 
-- [ ] **Step 3: Update CSV Export and Simulator Drawer to support 6 sensors**
+- [x] **Step 3: Update CSV Export and Simulator Drawer to support 6 sensors**
 
-- [ ] **Step 4: Commit dashboard controller changes**
+- [x] **Step 4: Commit dashboard controller changes**
 
 ```bash
 git add js/dashboard.js
@@ -318,23 +318,23 @@ git commit -m "feat(dashboard): wire 6-sensor cards, 9-column table, simulator, 
 **Files:**
 - Verify: `http://localhost:8080/`
 
-- [ ] **Step 1: Test Simulator L5 upload with 6 sensor parameters**
+- [x] **Step 1: Test Simulator L5 upload with 6 sensor parameters**
 Open Simulator drawer, generate random values for all 6 sensors, click "SEND L5 PAYLOAD".
 Verify both PUT to `/latest.json` and POST to `/history.json` succeed with HTTP 200.
 
-- [ ] **Step 2: Verify Realtime 3x2 Matrix HUD updates**
+- [x] **Step 2: Verify Realtime 3x2 Matrix HUD updates**
 Confirm all 6 cards update immediately with animated numbers and 5-segment pixel meters.
 
-- [ ] **Step 3: Verify 9-Column History Table**
+- [x] **Step 3: Verify 9-Column History Table**
 Confirm newly created records show all 6 sensor measurements, while legacy records show `N/A` without error.
 
-- [ ] **Step 4: Verify Multi-Axis Chart**
+- [x] **Step 4: Verify Multi-Axis Chart**
 Confirm all 6 curves render cleanly with glow effects and filter tabs work for every sensor.
 
-- [ ] **Step 5: Verify Theme Switching and Mobile Responsiveness**
+- [x] **Step 5: Verify Theme Switching and Mobile Responsiveness**
 Test Daylight Quartz and Midnight Obsidian themes; test viewport down to 375px mobile screen.
 
-- [ ] **Step 6: Final Git Commit**
+- [x] **Step 6: Final Git Commit**
 
 ```bash
 git add .
