@@ -1,8 +1,8 @@
 /**
- * Chart.js Integration for ESP32 IoT Dashboard
+ * Chart.js Integration for ESP32 IoT Dashboard - Minecraft Pixel Edition
  * 
- * Renders high-frequency telemetry history with multi-axis support,
- * custom glowing gradients, responsive tooltips, and time-series transformation.
+ * Renders retro 8-bit telemetry curves with square pixel markers,
+ * pixel fonts (Press Start 2P, Silkscreen, VT323), and Minecraft color accents.
  */
 
 class TelemetryCharts {
@@ -18,18 +18,18 @@ class TelemetryCharts {
 
     const chartCtx = ctx.getContext("2d");
 
-    // Create glowing gradient fills
+    // Pixel gradient fills
     const tempGrad = chartCtx.createLinearGradient(0, 0, 0, 300);
-    tempGrad.addColorStop(0, "rgba(239, 68, 68, 0.35)");
-    tempGrad.addColorStop(1, "rgba(239, 68, 68, 0.0)");
+    tempGrad.addColorStop(0, "rgba(255, 51, 51, 0.3)");
+    tempGrad.addColorStop(1, "rgba(255, 51, 51, 0.0)");
 
     const humiGrad = chartCtx.createLinearGradient(0, 0, 0, 300);
-    humiGrad.addColorStop(0, "rgba(6, 182, 212, 0.35)");
-    humiGrad.addColorStop(1, "rgba(6, 182, 212, 0.0)");
+    humiGrad.addColorStop(0, "rgba(56, 189, 248, 0.3)");
+    humiGrad.addColorStop(1, "rgba(56, 189, 248, 0.0)");
 
     const lightGrad = chartCtx.createLinearGradient(0, 0, 0, 300);
-    lightGrad.addColorStop(0, "rgba(245, 158, 11, 0.35)");
-    lightGrad.addColorStop(1, "rgba(245, 158, 11, 0.0)");
+    lightGrad.addColorStop(0, "rgba(255, 170, 0, 0.3)");
+    lightGrad.addColorStop(1, "rgba(255, 170, 0, 0.0)");
 
     this.gradients = {
       temp: tempGrad,
@@ -47,8 +47,8 @@ class TelemetryCharts {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 400,
-          easing: "easeOutQuart"
+          duration: 300,
+          easing: "linear"
         },
         interaction: {
           mode: "index",
@@ -59,39 +59,38 @@ class TelemetryCharts {
             display: true,
             position: "top",
             labels: {
-              color: "#94a3b8",
+              color: "#ffff55",
               font: {
-                family: "'Plus Jakarta Sans', sans-serif",
-                size: 12,
-                weight: "500"
+                family: "'Press Start 2P', monospace",
+                size: 9
               },
               usePointStyle: true,
-              pointStyle: "circle",
-              padding: 20
+              pointStyle: "rect",
+              padding: 16
             }
           },
           tooltip: {
-            backgroundColor: "rgba(15, 23, 42, 0.95)",
-            titleColor: "#f8fafc",
-            bodyColor: "#cbd5e1",
-            borderColor: "rgba(255, 255, 255, 0.1)",
-            borderWidth: 1,
-            padding: 12,
-            boxPadding: 6,
-            cornerRadius: 8,
-            titleFont: { family: "'JetBrains Mono', monospace", size: 12 },
-            bodyFont: { family: "'Plus Jakarta Sans', sans-serif", size: 13 }
+            backgroundColor: "#181818",
+            titleColor: "#ffff55",
+            bodyColor: "#ffffff",
+            borderColor: "#3a3a3a",
+            borderWidth: 2,
+            padding: 10,
+            boxPadding: 4,
+            cornerRadius: 0,
+            titleFont: { family: "'Press Start 2P', monospace", size: 10 },
+            bodyFont: { family: "'Silkscreen', monospace", size: 11 }
           }
         },
         scales: {
           x: {
             grid: {
-              color: "rgba(255, 255, 255, 0.04)",
+              color: "rgba(255, 255, 255, 0.06)",
               drawBorder: false
             },
             ticks: {
-              color: "#64748b",
-              font: { family: "'JetBrains Mono', monospace", size: 10 },
+              color: "#aaaaaa",
+              font: { family: "'VT323', monospace", size: 14 },
               maxRotation: 0,
               autoSkip: true,
               maxTicksLimit: 8
@@ -102,17 +101,17 @@ class TelemetryCharts {
             position: "left",
             title: {
               display: true,
-              text: "Temp (°C) / Humi (%)",
-              color: "#94a3b8",
-              font: { size: 11, family: "'Plus Jakarta Sans', sans-serif" }
+              text: "TEMP (°C) / HUMI (%)",
+              color: "#aaaaaa",
+              font: { size: 9, family: "'Press Start 2P', monospace" }
             },
             grid: {
-              color: "rgba(255, 255, 255, 0.05)",
+              color: "rgba(255, 255, 255, 0.06)",
               drawBorder: false
             },
             ticks: {
-              color: "#94a3b8",
-              font: { family: "'JetBrains Mono', monospace", size: 10 }
+              color: "#ffffff",
+              font: { family: "'VT323', monospace", size: 14 }
             },
             suggestedMin: 20,
             suggestedMax: 85
@@ -122,17 +121,17 @@ class TelemetryCharts {
             position: "right",
             title: {
               display: true,
-              text: "Light (lx)",
-              color: "#f59e0b",
-              font: { size: 11, family: "'Plus Jakarta Sans', sans-serif" }
+              text: "LIGHT (LX)",
+              color: "#ffaa00",
+              font: { size: 9, family: "'Press Start 2P', monospace" }
             },
             grid: {
               drawOnChartArea: false,
               drawBorder: false
             },
             ticks: {
-              color: "#f59e0b",
-              font: { family: "'JetBrains Mono', monospace", size: 10 }
+              color: "#ffaa00",
+              font: { family: "'VT323', monospace", size: 14 }
             },
             suggestedMin: 0,
             suggestedMax: 1000
@@ -164,7 +163,7 @@ class TelemetryCharts {
     const labels = records.map((item) => {
       if (!item.timestamp) return "--:--:--";
       const d = new Date(item.timestamp * 1000);
-      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
     });
 
     const tempData = records.map((item) => (item.temp !== undefined ? item.temp : null));
@@ -174,44 +173,47 @@ class TelemetryCharts {
     const allDatasets = [
       {
         id: "temp",
-        label: "Temperature (°C)",
+        label: "TEMP (°C)",
         data: tempData,
-        borderColor: "#ef4444",
+        borderColor: "#ff3333",
         backgroundColor: this.gradients.temp,
-        borderWidth: 2.5,
-        tension: 0.35,
+        borderWidth: 2,
+        tension: 0.1,
         fill: true,
-        pointRadius: 2.5,
-        pointHoverRadius: 6,
-        pointBackgroundColor: "#ef4444",
+        pointStyle: "rect",
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointBackgroundColor: "#ff3333",
         yAxisID: "yTemp"
       },
       {
         id: "humi",
-        label: "Humidity (%)",
+        label: "HUMI (%)",
         data: humiData,
-        borderColor: "#06b6d4",
+        borderColor: "#38bdf8",
         backgroundColor: this.gradients.humi,
-        borderWidth: 2.5,
-        tension: 0.35,
+        borderWidth: 2,
+        tension: 0.1,
         fill: true,
-        pointRadius: 2.5,
-        pointHoverRadius: 6,
-        pointBackgroundColor: "#06b6d4",
+        pointStyle: "rect",
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointBackgroundColor: "#38bdf8",
         yAxisID: "yTemp"
       },
       {
         id: "light",
-        label: "Light (lx)",
+        label: "LIGHT (LX)",
         data: lightData,
-        borderColor: "#f59e0b",
+        borderColor: "#ffaa00",
         backgroundColor: this.gradients.light,
-        borderWidth: 2.5,
-        tension: 0.35,
+        borderWidth: 2,
+        tension: 0.1,
         fill: true,
-        pointRadius: 2.5,
-        pointHoverRadius: 6,
-        pointBackgroundColor: "#f59e0b",
+        pointStyle: "rect",
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        pointBackgroundColor: "#ffaa00",
         yAxisID: "yLight"
       }
     ];
@@ -221,12 +223,12 @@ class TelemetryCharts {
       filtered = allDatasets.filter((d) => d.id === "temp");
       this.chart.options.scales.yLight.display = false;
       this.chart.options.scales.yTemp.display = true;
-      this.chart.options.scales.yTemp.title.text = "Temperature (°C)";
+      this.chart.options.scales.yTemp.title.text = "TEMP (°C)";
     } else if (this.currentMode === "humi") {
       filtered = allDatasets.filter((d) => d.id === "humi");
       this.chart.options.scales.yLight.display = false;
       this.chart.options.scales.yTemp.display = true;
-      this.chart.options.scales.yTemp.title.text = "Humidity (%)";
+      this.chart.options.scales.yTemp.title.text = "HUMIDITY (%)";
     } else if (this.currentMode === "light") {
       filtered = allDatasets.filter((d) => d.id === "light");
       this.chart.options.scales.yTemp.display = false;
@@ -234,7 +236,7 @@ class TelemetryCharts {
     } else {
       this.chart.options.scales.yTemp.display = true;
       this.chart.options.scales.yLight.display = true;
-      this.chart.options.scales.yTemp.title.text = "Temp (°C) / Humi (%)";
+      this.chart.options.scales.yTemp.title.text = "TEMP (°C) / HUMI (%)";
     }
 
     this.chart.data.labels = labels;
