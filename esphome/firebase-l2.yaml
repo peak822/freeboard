@@ -1,16 +1,23 @@
 # ==============================================================================
-# L2 — Replace Constant Data with Random Sensors
-# Path: /lab/esp32-01/latest.json (Method: PUT)
-# Sensors:
-#   - temp:  25.0 - 35.0 °C (update 5s)
-#   - humi:  50.0 - 80.0 %  (update 5s)
-#   - light: 100 - 1000 lx  (update 5s)
-# Upload interval: 10s
+# ESP32 + ESPHome + Firebase RTDB — Phase 2
+# L2: Random / Simulated Sensor Values → HTTP PUT → Firebase /latest
+#
+# Target Path: /lab/esp32-01/latest.json
+# Method: HTTP PUT
+#
+# Simulated Sensor Suite (Local ESP32 Generation):
+#   - temp:  25.0 – 35.0 °C (update 5s, 1 decimal place)
+#   - humi:  50.0 – 80.0 %  (update 5s, 1 decimal place)
+#   - light: 100 – 1000 lx  (update 5s, integer)
+#
+# Timing:
+#   - Sensor update frequency: ~5 seconds
+#   - Cloud Firebase upload frequency: ~10 seconds
 # ==============================================================================
 
 esphome:
   name: esp32-01
-  comment: "L2 - Random Sensors to Firebase RTDB (Latest PUT)"
+  comment: "Phase 2 L2 - Simulated Sensor Values to Firebase RTDB via HTTP PUT"
 
 esp32:
   board: esp32dev
@@ -24,10 +31,16 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   power_save_mode: none
+  fast_connect: true
+  on_connect:
+    then:
+      - logger.log: "WiFi Connected! ESP32 online and ready for L2 sensor simulation."
 
+# HTTPS REST Client
 http_request:
   timeout: 10s
 
+# Simulated Template Sensors (Updated locally every 5 seconds)
 sensor:
   - platform: template
     name: "Temperature"
@@ -36,7 +49,9 @@ sensor:
     accuracy_decimals: 1
     update_interval: 5s
     lambda: |-
-      return 25.0 + random_float() * 10.0;
+      float val = 25.0 + random_float() * 10.0;
+      ESP_LOGD("sensor.temp", "Simulated Temp: %.1f °C", val);
+      return val;
 
   - platform: template
     name: "Humidity"
@@ -45,7 +60,9 @@ sensor:
     accuracy_decimals: 1
     update_interval: 5s
     lambda: |-
-      return 50.0 + random_float() * 30.0;
+      float val = 50.0 + random_float() * 30.0;
+      ESP_LOGD("sensor.humi", "Simulated Humi: %.1f %%", val);
+      return val;
 
   - platform: template
     name: "Light"
@@ -54,8 +71,11 @@ sensor:
     accuracy_decimals: 0
     update_interval: 5s
     lambda: |-
-      return 100.0 + random_float() * 900.0;
+      float val = 100.0 + random_float() * 900.0;
+      ESP_LOGD("sensor.light", "Simulated Light: %.0f lx", val);
+      return roundf(val);
 
+# Cloud Firebase Upload Pipeline (Uploads latest state every 10 seconds)
 interval:
   - interval: 10s
     then:
@@ -63,6 +83,9 @@ interval:
           condition:
             wifi.connected:
           then:
+            - logger.log:
+                format: "Uploading latest data to Firebase: temp=%.1f°C, humi=%.1f%%, light=%.0flx -> /lab/esp32-01/latest"
+                args: ['id(temp).state', 'id(humi).state', 'id(light).state']
             - http_request.put:
                 url: !secret firebase_latest_url
                 json: |-
@@ -71,8 +94,16 @@ interval:
                   root["light"] = id(light).state;
                 on_response:
                   then:
-                    - logger.log:
-                        format: "Firebase HTTP status = %d"
-                        args: ['status_code']
+                    - if:
+                        condition:
+                          lambda: 'return status_code == 200;'
+                        then:
+                          - logger.log:
+                              format: "Firebase HTTP status: %d (Firebase upload successful)"
+                              args: ['status_code']
+                        else:
+                          - logger.log:
+                              format: "Firebase HTTP status: %d (Firebase upload failed)"
+                              args: ['status_code']
           else:
             - logger.log: "Skip Firebase: WiFi not connected"
