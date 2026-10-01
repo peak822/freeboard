@@ -1,12 +1,25 @@
 # ==============================================================================
-# L1 — Send Constant Data to Firebase Realtime Database
-# Path: /lab/esp32-01/latest.json (Method: PUT)
-# Constant values: temp = 25.5, humi = 60.0, light = 300.0
+# ESP32 + ESPHome + Firebase RTDB — Phase 2
+# L1: เชื่อมต่อ ESPHome กับ Firebase Realtime Database ด้วยค่าคงที่
+#
+# Target Path: /lab/esp32-01/latest.json
+# Method: HTTP PUT
+# Constant Test Values:
+#   - temp:  30
+#   - humi:  60
+#   - light: 500
+#
+# Requirements:
+#   - ESPHome Framework: esp-idf on esp32dev
+#   - Wi-Fi credentials via !secret wifi_ssid & wifi_password
+#   - HTTP Request timeout: 10s
+#   - Check Wi-Fi before sending
+#   - Clear HTTP status logging in console
 # ==============================================================================
 
 esphome:
   name: esp32-01
-  comment: "L1 - Constant Data to Firebase RTDB"
+  comment: "Phase 2 L1 - Constant Data to Firebase RTDB via HTTP PUT"
 
 esp32:
   board: esp32dev
@@ -20,10 +33,16 @@ wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   power_save_mode: none
+  fast_connect: true
+  on_connect:
+    then:
+      - logger.log: "WiFi Connected! Ready to send L1 constant payload to Firebase..."
 
+# HTTPS REST Client
 http_request:
   timeout: 10s
 
+# Periodic Upload Interval (Every 10 seconds)
 interval:
   - interval: 10s
     then:
@@ -31,12 +50,13 @@ interval:
           condition:
             wifi.connected:
           then:
+            - logger.log: "Sending L1 Constant Data: temp=30, humi=60, light=500 -> /lab/esp32-01/latest"
             - http_request.put:
                 url: !secret firebase_latest_url
                 json: |-
-                  root["temp"] = 25.5;
-                  root["humi"] = 60.0;
-                  root["light"] = 300.0;
+                  root["temp"] = 30;
+                  root["humi"] = 60;
+                  root["light"] = 500;
                 on_response:
                   then:
                     - logger.log:
