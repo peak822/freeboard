@@ -1,8 +1,9 @@
 /**
- * Dashboard UI Controller for ESP32 IoT Firebase Platform - Modern Cyber-Pixel Edition
+ * Dashboard UI Controller for ESP32 IoT Firebase Platform - Modern Cyber-Pixel 6-Sensor Suite
  * 
- * Coordinates telemetry cards, 5-segment pixel meters, Light/Dark theme toggle,
- * 6-column history table, 8-bit web audio feedback, settings modal, simulator drawer, and CSV export.
+ * Coordinates 6-sensor environmental KPI cards, 5-segment pixel meters, System Health HUD,
+ * Light/Dark theme toggle, 9-column history table, 8-bit web audio feedback, settings modal,
+ * 6-sensor simulator drawer, and CSV export.
  */
 
 // -------------------------------------------------------------
@@ -70,32 +71,56 @@ document.addEventListener("DOMContentLoaded", () => {
     humiMin: Infinity,
     humiMax: -Infinity,
     lightMin: Infinity,
-    lightMax: -Infinity
+    lightMax: -Infinity,
+    pressMin: Infinity,
+    pressMax: -Infinity,
+    co2Min: Infinity,
+    co2Max: -Infinity,
+    noiseMin: Infinity,
+    noiseMax: -Infinity
   };
   let staleTimer = null;
 
-  // DOM Elements
+  // DOM Elements - Header & HUD Bar
   const elStatusDot = document.getElementById("statusDot");
   const elStatusText = document.getElementById("statusText");
   const elDeviceStatusBadge = document.getElementById("deviceStatusBadge");
+  const elHealthDeviceId = document.getElementById("healthDeviceId");
   const elLastSeen = document.getElementById("lastSeenTime");
   const elRelativeTime = document.getElementById("relativeTime");
+  const elMeterSystem = document.getElementById("meterSystem");
 
-  // KPI Elements
+  // KPI Value Elements (6 Sensors)
   const elValTemp = document.getElementById("valTemp");
   const elValHumi = document.getElementById("valHumi");
   const elValLight = document.getElementById("valLight");
+  const elValPress = document.getElementById("valPress");
+  const elValCo2 = document.getElementById("valCo2");
+  const elValNoise = document.getElementById("valNoise");
+
+  // KPI Min/Max Footers (6 Sensors)
   const elMinMaxTemp = document.getElementById("minMaxTemp");
   const elMinMaxHumi = document.getElementById("minMaxHumi");
   const elMinMaxLight = document.getElementById("minMaxLight");
+  const elMinMaxPress = document.getElementById("minMaxPress");
+  const elMinMaxCo2 = document.getElementById("minMaxCo2");
+  const elMinMaxNoise = document.getElementById("minMaxNoise");
+
+  // KPI Status Badges (6 Sensors)
   const elBadgeTemp = document.getElementById("badgeTemp");
   const elBadgeHumi = document.getElementById("badgeHumi");
   const elBadgeLight = document.getElementById("badgeLight");
+  const elBadgePress = document.getElementById("badgePress");
+  const elBadgeCo2 = document.getElementById("badgeCo2");
+  const elBadgeNoise = document.getElementById("badgeNoise");
 
-  // 5-Segment Meters
+  // 5-Segment Meters (6 Sensors)
   const elMeterTemp = document.getElementById("meterTemp");
   const elMeterHumi = document.getElementById("meterHumi");
   const elMeterLight = document.getElementById("meterLight");
+  const elMeterPress = document.getElementById("meterPress");
+  const elMeterCo2 = document.getElementById("meterCo2");
+  const elMeterNoise = document.getElementById("meterNoise");
 
   // Table & Stats
   const elHistoryTableBody = document.getElementById("historyTableBody");
@@ -186,6 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const selected = e.target.value;
       if (selected) {
         activeDeviceId = selected;
+        if (elHealthDeviceId) elHealthDeviceId.textContent = selected;
         firebaseService.selectDevice(selected);
         playPixelSound("click");
         showToast(`Switched telemetry view to ${selected}`, "info");
@@ -250,6 +276,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleLatestUpdate(data, deviceId) {
     if (deviceId && deviceId !== activeDeviceId) return;
 
+    if (elHealthDeviceId) {
+      elHealthDeviceId.textContent = deviceId || activeDeviceId;
+    }
+
     if (!data) {
       if (historyData.length === 0) {
         showEmptyState(true);
@@ -263,105 +293,235 @@ document.addEventListener("DOMContentLoaded", () => {
     const hasTemp = data.temp !== undefined && data.temp !== null && !isNaN(Number(data.temp));
     const hasHumi = data.humi !== undefined && data.humi !== null && !isNaN(Number(data.humi));
     const hasLight = data.light !== undefined && data.light !== null && !isNaN(Number(data.light));
+    const hasPress = data.press !== undefined && data.press !== null && !isNaN(Number(data.press));
+    const hasCo2 = data.co2 !== undefined && data.co2 !== null && !isNaN(Number(data.co2));
+    const hasNoise = data.noise !== undefined && data.noise !== null && !isNaN(Number(data.noise));
     const hasTs = data.timestamp !== undefined && data.timestamp !== null && !isNaN(Number(data.timestamp));
 
     const temp = hasTemp ? parseFloat(data.temp) : null;
     const humi = hasHumi ? parseFloat(data.humi) : null;
     const light = hasLight ? parseInt(data.light, 10) : null;
+    const press = hasPress ? parseFloat(data.press) : null;
+    const co2 = hasCo2 ? parseInt(data.co2, 10) : null;
+    const noise = hasNoise ? parseFloat(data.noise) : null;
     const ts = hasTs ? parseInt(data.timestamp, 10) : null;
 
-    // Update Temperature Card
+    let activeCount = 0;
+
+    // 01: Temperature (25 - 35°C)
     if (temp !== null) {
+      activeCount++;
       sessionStats.tempMin = Math.min(sessionStats.tempMin, temp);
       sessionStats.tempMax = Math.max(sessionStats.tempMax, temp);
-      elValTemp.textContent = temp.toFixed(1);
-      elMinMaxTemp.textContent = `MIN: ${sessionStats.tempMin.toFixed(1)}°C | MAX: ${sessionStats.tempMax.toFixed(1)}°C`;
+      if (elValTemp) elValTemp.textContent = temp.toFixed(1);
+      if (elMinMaxTemp) elMinMaxTemp.textContent = `MIN: ${sessionStats.tempMin.toFixed(1)}°C | MAX: ${sessionStats.tempMax.toFixed(1)}°C`;
       
       const tempSegments = Math.min(5, Math.max(1, Math.round(((temp - 25) / 10) * 5)));
       updateMeter(elMeterTemp, tempSegments);
 
-      if (temp > 33.0) {
-        elBadgeTemp.textContent = "HIGH TEMP";
-        elBadgeTemp.className = "pixel-tag badge-danger";
-      } else {
-        elBadgeTemp.textContent = "OPTIMAL";
-        elBadgeTemp.className = "pixel-tag badge-success";
+      if (elBadgeTemp) {
+        if (temp > 33.0) {
+          elBadgeTemp.textContent = "HIGH TEMP";
+          elBadgeTemp.className = "pixel-tag badge-danger";
+        } else {
+          elBadgeTemp.textContent = "OPTIMAL";
+          elBadgeTemp.className = "pixel-tag badge-success";
+        }
       }
     } else {
-      elValTemp.textContent = "N/A";
-      elBadgeTemp.textContent = "NO DATA";
-      elBadgeTemp.className = "pixel-tag badge-neutral";
+      if (elValTemp) elValTemp.textContent = "N/A";
+      if (elBadgeTemp) {
+        elBadgeTemp.textContent = "NO DATA";
+        elBadgeTemp.className = "pixel-tag badge-neutral";
+      }
+      updateMeter(elMeterTemp, 0);
     }
 
-    // Update Humidity Card
+    // 02: Humidity (50 - 80%)
     if (humi !== null) {
+      activeCount++;
       sessionStats.humiMin = Math.min(sessionStats.humiMin, humi);
       sessionStats.humiMax = Math.max(sessionStats.humiMax, humi);
-      elValHumi.textContent = humi.toFixed(1);
-      elMinMaxHumi.textContent = `MIN: ${sessionStats.humiMin.toFixed(1)}% | MAX: ${sessionStats.humiMax.toFixed(1)}%`;
+      if (elValHumi) elValHumi.textContent = humi.toFixed(1);
+      if (elMinMaxHumi) elMinMaxHumi.textContent = `MIN: ${sessionStats.humiMin.toFixed(1)}% | MAX: ${sessionStats.humiMax.toFixed(1)}%`;
 
       const humiSegments = Math.min(5, Math.max(1, Math.round(((humi - 50) / 30) * 5)));
       updateMeter(elMeterHumi, humiSegments);
 
-      if (humi > 75.0) {
-        elBadgeHumi.textContent = "HIGH HUMI";
-        elBadgeHumi.className = "pixel-tag badge-cyan";
-      } else if (humi < 55.0) {
-        elBadgeHumi.textContent = "LOW HUMI";
-        elBadgeHumi.className = "pixel-tag badge-warning";
-      } else {
-        elBadgeHumi.textContent = "BALANCED";
-        elBadgeHumi.className = "pixel-tag badge-success";
+      if (elBadgeHumi) {
+        if (humi > 75.0) {
+          elBadgeHumi.textContent = "HIGH HUMI";
+          elBadgeHumi.className = "pixel-tag badge-cyan";
+        } else if (humi < 55.0) {
+          elBadgeHumi.textContent = "LOW HUMI";
+          elBadgeHumi.className = "pixel-tag badge-warning";
+        } else {
+          elBadgeHumi.textContent = "BALANCED";
+          elBadgeHumi.className = "pixel-tag badge-success";
+        }
       }
     } else {
-      elValHumi.textContent = "N/A";
-      elBadgeHumi.textContent = "NO DATA";
-      elBadgeHumi.className = "pixel-tag badge-neutral";
+      if (elValHumi) elValHumi.textContent = "N/A";
+      if (elBadgeHumi) {
+        elBadgeHumi.textContent = "NO DATA";
+        elBadgeHumi.className = "pixel-tag badge-neutral";
+      }
+      updateMeter(elMeterHumi, 0);
     }
 
-    // Update Light Card
+    // 03: Ambient Light (100 - 1000 lx)
     if (light !== null) {
+      activeCount++;
       sessionStats.lightMin = Math.min(sessionStats.lightMin, light);
       sessionStats.lightMax = Math.max(sessionStats.lightMax, light);
-      elValLight.textContent = light;
-      elMinMaxLight.textContent = `MIN: ${sessionStats.lightMin} lx | MAX: ${sessionStats.lightMax} lx`;
+      if (elValLight) elValLight.textContent = light;
+      if (elMinMaxLight) elMinMaxLight.textContent = `MIN: ${sessionStats.lightMin} lx | MAX: ${sessionStats.lightMax} lx`;
 
       const lightSegments = Math.min(5, Math.max(1, Math.round(((light - 100) / 900) * 5)));
       updateMeter(elMeterLight, lightSegments);
 
-      if (light < 250) {
-        elBadgeLight.textContent = "DIM LIGHT";
-        elBadgeLight.className = "pixel-tag badge-neutral";
-      } else if (light > 800) {
-        elBadgeLight.textContent = "BRIGHT SUN";
-        elBadgeLight.className = "pixel-tag badge-warning";
-      } else {
-        elBadgeLight.textContent = "WELL-LIT";
-        elBadgeLight.className = "pixel-tag badge-success";
+      if (elBadgeLight) {
+        if (light < 250) {
+          elBadgeLight.textContent = "DIM LIGHT";
+          elBadgeLight.className = "pixel-tag badge-neutral";
+        } else if (light > 800) {
+          elBadgeLight.textContent = "BRIGHT SUN";
+          elBadgeLight.className = "pixel-tag badge-warning";
+        } else {
+          elBadgeLight.textContent = "WELL-LIT";
+          elBadgeLight.className = "pixel-tag badge-success";
+        }
       }
     } else {
-      elValLight.textContent = "N/A";
-      elBadgeLight.textContent = "NO DATA";
-      elBadgeLight.className = "pixel-tag badge-neutral";
+      if (elValLight) elValLight.textContent = "N/A";
+      if (elBadgeLight) {
+        elBadgeLight.textContent = "NO DATA";
+        elBadgeLight.className = "pixel-tag badge-neutral";
+      }
+      updateMeter(elMeterLight, 0);
     }
+
+    // 04: Air Pressure (950 - 1050 hPa)
+    if (press !== null) {
+      activeCount++;
+      sessionStats.pressMin = Math.min(sessionStats.pressMin, press);
+      sessionStats.pressMax = Math.max(sessionStats.pressMax, press);
+      if (elValPress) elValPress.textContent = press.toFixed(1);
+      if (elMinMaxPress) elMinMaxPress.textContent = `MIN: ${sessionStats.pressMin.toFixed(1)} hPa | MAX: ${sessionStats.pressMax.toFixed(1)} hPa`;
+
+      const pressSegments = Math.min(5, Math.max(1, Math.round(((press - 950) / 100) * 5)));
+      updateMeter(elMeterPress, pressSegments);
+
+      if (elBadgePress) {
+        if (press > 1025.0) {
+          elBadgePress.textContent = "HIGH PRES";
+          elBadgePress.className = "pixel-tag badge-purple";
+        } else if (press < 980.0) {
+          elBadgePress.textContent = "LOW PRES";
+          elBadgePress.className = "pixel-tag badge-warning";
+        } else {
+          elBadgePress.textContent = "STABLE";
+          elBadgePress.className = "pixel-tag badge-success";
+        }
+      }
+    } else {
+      if (elValPress) elValPress.textContent = "N/A";
+      if (elBadgePress) {
+        elBadgePress.textContent = "NO DATA";
+        elBadgePress.className = "pixel-tag badge-neutral";
+      }
+      updateMeter(elMeterPress, 0);
+    }
+
+    // 05: Carbon Dioxide (400 - 1200 ppm)
+    if (co2 !== null) {
+      activeCount++;
+      sessionStats.co2Min = Math.min(sessionStats.co2Min, co2);
+      sessionStats.co2Max = Math.max(sessionStats.co2Max, co2);
+      if (elValCo2) elValCo2.textContent = co2;
+      if (elMinMaxCo2) elMinMaxCo2.textContent = `MIN: ${sessionStats.co2Min} ppm | MAX: ${sessionStats.co2Max} ppm`;
+
+      const co2Segments = Math.min(5, Math.max(1, Math.round(((co2 - 400) / 800) * 5)));
+      updateMeter(elMeterCo2, co2Segments);
+
+      if (elBadgeCo2) {
+        if (co2 > 1000) {
+          elBadgeCo2.textContent = "POOR (VENT)";
+          elBadgeCo2.className = "pixel-tag badge-danger";
+        } else if (co2 > 800) {
+          elBadgeCo2.textContent = "MODERATE";
+          elBadgeCo2.className = "pixel-tag badge-warning";
+        } else {
+          elBadgeCo2.textContent = "FRESH AIR";
+          elBadgeCo2.className = "pixel-tag badge-success";
+        }
+      }
+    } else {
+      if (elValCo2) elValCo2.textContent = "N/A";
+      if (elBadgeCo2) {
+        elBadgeCo2.textContent = "NO DATA";
+        elBadgeCo2.className = "pixel-tag badge-neutral";
+      }
+      updateMeter(elMeterCo2, 0);
+    }
+
+    // 06: Sound Noise Level (30 - 90 dB)
+    if (noise !== null) {
+      activeCount++;
+      sessionStats.noiseMin = Math.min(sessionStats.noiseMin, noise);
+      sessionStats.noiseMax = Math.max(sessionStats.noiseMax, noise);
+      if (elValNoise) elValNoise.textContent = noise.toFixed(1);
+      if (elMinMaxNoise) elMinMaxNoise.textContent = `MIN: ${sessionStats.noiseMin.toFixed(1)} dB | MAX: ${sessionStats.noiseMax.toFixed(1)} dB`;
+
+      const noiseSegments = Math.min(5, Math.max(1, Math.round(((noise - 30) / 60) * 5)));
+      updateMeter(elMeterNoise, noiseSegments);
+
+      if (elBadgeNoise) {
+        if (noise > 75.0) {
+          elBadgeNoise.textContent = "LOUD NOISE";
+          elBadgeNoise.className = "pixel-tag badge-danger";
+        } else if (noise > 55.0) {
+          elBadgeNoise.textContent = "MODERATE";
+          elBadgeNoise.className = "pixel-tag badge-blue";
+        } else {
+          elBadgeNoise.textContent = "QUIET";
+          elBadgeNoise.className = "pixel-tag badge-success";
+        }
+      }
+    } else {
+      if (elValNoise) elValNoise.textContent = "N/A";
+      if (elBadgeNoise) {
+        elBadgeNoise.textContent = "NO DATA";
+        elBadgeNoise.className = "pixel-tag badge-neutral";
+      }
+      updateMeter(elMeterNoise, 0);
+    }
+
+    // Update System HUD Heartbeat Meter (proportional to 6 active sensors)
+    const systemSegments = Math.min(5, Math.max(1, Math.round((activeCount / 6) * 5)));
+    updateMeter(elMeterSystem, systemSegments);
 
     // Timestamp formatting in Asia/Bangkok timezone
     if (ts !== null) {
       const date = new Date(ts * 1000);
       try {
-        elLastSeen.textContent = date.toLocaleTimeString("en-US", { 
-          timeZone: IOT_CONFIG.timeZone || "Asia/Bangkok", 
-          hour12: false 
-        });
+        if (elLastSeen) {
+          elLastSeen.textContent = date.toLocaleTimeString("en-US", { 
+            timeZone: IOT_CONFIG.timeZone || "Asia/Bangkok", 
+            hour12: false 
+          });
+        }
       } catch (e) {
-        elLastSeen.textContent = date.toLocaleTimeString([], { hour12: false });
+        if (elLastSeen) elLastSeen.textContent = date.toLocaleTimeString([], { hour12: false });
       }
       evaluateDeviceStatus(ts);
     } else {
-      elLastSeen.textContent = "N/A";
-      elRelativeTime.textContent = "No Timestamp";
-      elDeviceStatusBadge.textContent = "STANDBY";
-      elDeviceStatusBadge.className = "pixel-tag badge-neutral";
+      if (elLastSeen) elLastSeen.textContent = "N/A";
+      if (elRelativeTime) elRelativeTime.textContent = "No Timestamp";
+      if (elDeviceStatusBadge) {
+        elDeviceStatusBadge.textContent = "STANDBY";
+        elDeviceStatusBadge.className = "pixel-tag badge-neutral";
+      }
     }
 
     triggerCardFlash();
@@ -391,7 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Update Charts (from same real Firebase history source)
     telemetryCharts.updateData(historyData);
 
-    // Render 6-Column History Table
+    // Render 9-Column History Table
     renderHistoryTable(historyData);
   }
 
@@ -423,15 +583,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const diff = nowSeconds - timestampSeconds;
 
     if (diff <= IOT_CONFIG.offlineThresholdSeconds) {
-      elDeviceStatusBadge.textContent = "ONLINE";
-      elDeviceStatusBadge.className = "pixel-tag badge-success";
-      elRelativeTime.textContent = diff <= 1 ? "Just now" : `${diff}s ago`;
-      elRelativeTime.className = "text-emerald";
+      if (elDeviceStatusBadge) {
+        elDeviceStatusBadge.textContent = "ONLINE";
+        elDeviceStatusBadge.className = "pixel-tag badge-success";
+      }
+      if (elRelativeTime) {
+        elRelativeTime.textContent = diff <= 1 ? "Just now" : `${diff}s ago`;
+        elRelativeTime.className = "text-emerald";
+      }
     } else {
-      elDeviceStatusBadge.textContent = "STALE / OFFLINE";
-      elDeviceStatusBadge.className = "pixel-tag badge-danger";
-      elRelativeTime.textContent = formatDuration(diff) + " ago";
-      elRelativeTime.className = "text-amber";
+      if (elDeviceStatusBadge) {
+        elDeviceStatusBadge.textContent = "STALE / OFFLINE";
+        elDeviceStatusBadge.className = "pixel-tag badge-danger";
+      }
+      if (elRelativeTime) {
+        elRelativeTime.textContent = formatDuration(diff) + " ago";
+        elRelativeTime.className = "text-amber";
+      }
     }
   }
 
@@ -452,7 +620,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------
-  // 6-Column History Table Renderer
+  // 9-Column History Table Renderer
   // -------------------------------------------------------------
 
   function renderHistoryTable(data) {
@@ -463,7 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (elDiagDisplayedCount) elDiagDisplayedCount.textContent = 0;
       elHistoryTableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center py-6 text-muted" style="text-align:center; padding: 28px;">
+          <td colspan="9" class="text-center py-6 text-muted" style="text-align:center; padding: 28px;">
             <i class="fas fa-inbox me-2"></i>No historical telemetry records found in Firebase RTDB
           </td>
         </tr>`;
@@ -519,14 +687,32 @@ document.addEventListener("DOMContentLoaded", () => {
         ? `${parseInt(row.light, 10)} lx` 
         : `<span class="text-muted">N/A</span>`;
 
+      const press = (row.press !== null && row.press !== undefined && !isNaN(row.press)) 
+        ? `${parseFloat(row.press).toFixed(1)} hPa` 
+        : `<span class="text-muted">N/A</span>`;
+
+      const co2 = (row.co2 !== null && row.co2 !== undefined && !isNaN(row.co2)) 
+        ? `${parseInt(row.co2, 10)} ppm` 
+        : `<span class="text-muted">N/A</span>`;
+
+      const noise = (row.noise !== null && row.noise !== undefined && !isNaN(row.noise)) 
+        ? `${parseFloat(row.noise).toFixed(1)} dB` 
+        : `<span class="text-muted">N/A</span>`;
+
       // Derived presentation status for row
       let statusBadge = `<span class="pixel-tag badge-success">HEALTHY</span>`;
-      if (row.temp !== null && row.temp > 33.0) {
+      if (row.co2 !== null && row.co2 > 1000) {
+        statusBadge = `<span class="pixel-tag badge-danger">HIGH CO2</span>`;
+      } else if (row.temp !== null && row.temp > 33.0) {
         statusBadge = `<span class="pixel-tag badge-danger">HIGH TEMP</span>`;
+      } else if (row.noise !== null && row.noise > 75.0) {
+        statusBadge = `<span class="pixel-tag badge-danger">LOUD NOISE</span>`;
       } else if (row.humi !== null && row.humi > 75.0) {
         statusBadge = `<span class="pixel-tag badge-cyan">HIGH HUMI</span>`;
-      } else if (row.temp === null || row.humi === null || row.light === null || ts === null) {
-        statusBadge = `<span class="pixel-tag badge-neutral">PARTIAL (L3)</span>`;
+      } else if (row.press !== null && row.press < 980.0) {
+        statusBadge = `<span class="pixel-tag badge-purple">LOW PRES</span>`;
+      } else if (row.temp === null || row.humi === null || row.light === null || row.press === null || row.co2 === null || row.noise === null || ts === null) {
+        statusBadge = `<span class="pixel-tag badge-neutral">PARTIAL</span>`;
       }
 
       return `
@@ -536,6 +722,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="mono-text text-redstone" style="font-weight:700;">${temp}</td>
           <td class="mono-text text-cyan" style="font-weight:700;">${humi}</td>
           <td class="mono-text text-amber" style="font-weight:700;">${light}</td>
+          <td class="mono-text text-purple" style="font-weight:700;">${press}</td>
+          <td class="mono-text text-emerald" style="font-weight:700;">${co2}</td>
+          <td class="mono-text text-blue" style="font-weight:700;">${noise}</td>
           <td>${statusBadge}</td>
         </tr>
       `;
@@ -601,7 +790,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------
-  // CSV Export
+  // 6-Sensor CSV Export
   // -------------------------------------------------------------
   const btnExportCsv = document.getElementById("btnExportCsv");
   if (btnExportCsv) {
@@ -611,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      let csv = "Device ID,Timestamp (Unix),Datetime (Asia/Bangkok),Temperature (C),Humidity (%),Light (lx),Status\n";
+      let csv = "Device ID,Timestamp (Unix),Datetime (Asia/Bangkok),Temperature (C),Humidity (%),Light (lx),Pressure (hPa),CO2 (ppm),Noise (dB),Status\n";
       historyData.forEach((row) => {
         const ts = row.timestamp || "";
         let dateBangkok = "N/A";
@@ -625,24 +814,33 @@ document.addEventListener("DOMContentLoaded", () => {
             dateBangkok = new Date(ts * 1000).toISOString();
           }
         }
-        const temp = row.temp !== null && row.temp !== undefined ? row.temp : "N/A";
-        const humi = row.humi !== null && row.humi !== undefined ? row.humi : "N/A";
-        const light = row.light !== null && row.light !== undefined ? row.light : "N/A";
-        const status = (row.temp > 33.0) ? "HIGH TEMP" : (row.humi > 75.0) ? "HIGH HUMI" : "HEALTHY";
+        const temp = (row.temp !== null && row.temp !== undefined) ? row.temp : "N/A";
+        const humi = (row.humi !== null && row.humi !== undefined) ? row.humi : "N/A";
+        const light = (row.light !== null && row.light !== undefined) ? row.light : "N/A";
+        const press = (row.press !== null && row.press !== undefined) ? row.press : "N/A";
+        const co2 = (row.co2 !== null && row.co2 !== undefined) ? row.co2 : "N/A";
+        const noise = (row.noise !== null && row.noise !== undefined) ? row.noise : "N/A";
 
-        csv += `"${row.deviceId || activeDeviceId}","${ts}","${dateBangkok}","${temp}","${humi}","${light}","${status}"\n`;
+        let status = "HEALTHY";
+        if (row.co2 !== null && row.co2 > 1000) status = "HIGH CO2";
+        else if (row.temp !== null && row.temp > 33.0) status = "HIGH TEMP";
+        else if (row.noise !== null && row.noise > 75.0) status = "LOUD NOISE";
+        else if (row.humi !== null && row.humi > 75.0) status = "HIGH HUMI";
+        else if (row.press !== null && row.press < 980.0) status = "LOW PRES";
+
+        csv += `"${row.deviceId || activeDeviceId}","${ts}","${dateBangkok}","${temp}","${humi}","${light}","${press}","${co2}","${noise}","${status}"\n`;
       });
 
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `esp32_telemetry_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `esp32_6sensor_telemetry_${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       playPixelSound("success");
-      showToast("CSV export completed successfully!", "success");
+      showToast("6-Sensor CSV export completed successfully!", "success");
     });
   }
 
@@ -708,7 +906,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------
-  // ESP32 Simulator Drawer Handlers
+  // ESP32 6-Sensor Simulator Drawer Handlers
   // -------------------------------------------------------------
   const simDrawer = document.getElementById("simulatorDrawer");
   const btnOpenSim = document.getElementById("btnOpenSim");
@@ -735,6 +933,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("simTemp").value = (25.0 + Math.random() * 10.0).toFixed(1);
       document.getElementById("simHumi").value = (50.0 + Math.random() * 30.0).toFixed(1);
       document.getElementById("simLight").value = Math.round(100 + Math.random() * 900);
+      document.getElementById("simPress").value = (950.0 + Math.random() * 100.0).toFixed(1);
+      document.getElementById("simCo2").value = Math.round(400 + Math.random() * 800);
+      document.getElementById("simNoise").value = (30.0 + Math.random() * 60.0).toFixed(1);
     });
   }
 
@@ -743,17 +944,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const temp = parseFloat(document.getElementById("simTemp").value);
       const humi = parseFloat(document.getElementById("simHumi").value);
       const light = parseInt(document.getElementById("simLight").value, 10);
+      const press = parseFloat(document.getElementById("simPress").value);
+      const co2 = parseInt(document.getElementById("simCo2").value, 10);
+      const noise = parseFloat(document.getElementById("simNoise").value);
 
       btnSendMock.disabled = true;
       btnSendMock.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>SENDING...`;
-      appendSimLog(`[L5] Dispatch Dual REST: Temp=${temp}°C, Humi=${humi}%, Light=${light}lx`);
+      appendSimLog(`[L5] Dual REST: Temp=${temp}°C, Humi=${humi}%, Light=${light}lx, Press=${press}hPa, CO2=${co2}ppm, Noise=${noise}dB`);
 
       try {
-        const res = await firebaseService.simulateEsp32Upload(temp, humi, light);
+        const res = await firebaseService.simulateEsp32Upload(temp, humi, light, press, co2, noise);
         appendSimLog(`[L5] Latest PUT status = ${res.latestStatus}`);
         appendSimLog(`[L5] History POST status = ${res.historyStatus}`);
         playPixelSound("success");
-        showToast("Simulated ESP32 payload uploaded successfully!", "success");
+        showToast("Simulated 6-sensor ESP32 payload uploaded successfully!", "success");
       } catch (err) {
         appendSimLog(`[ERROR] Request failed: ${err.message}`);
         showToast("Simulation error: Check database URL and rules", "error");
@@ -790,4 +994,3 @@ function showToast(message, type = "info") {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
-
