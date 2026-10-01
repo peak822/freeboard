@@ -156,6 +156,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentTheme = localStorage.getItem("esp32_iot_theme") || "dark";
   applyTheme(currentTheme, false);
 
+  // Initialize WebGL Pixel Snow Background
+  if (window.pixelSnowBg && typeof window.pixelSnowBg.init === "function") {
+    window.pixelSnowBg.init("pixelSnowBg", { initialTheme: currentTheme });
+  }
+
   if (btnToggleTheme) {
     btnToggleTheme.addEventListener("click", () => {
       const newTheme = currentTheme === "dark" ? "light" : "dark";
@@ -180,6 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     telemetryCharts.setTheme(theme);
+    if (window.pixelSnowBg && typeof window.pixelSnowBg.setTheme === "function") {
+      window.pixelSnowBg.setTheme(theme);
+    }
   }
 
   // Automatically dismiss loading overlay after brief initial load time
