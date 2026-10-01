@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ESP32 Realtime Telemetry Dashboard | Modern Cyber-Pixel</title>
-  <meta name="description" content="Modern Cyber-Pixel IoT Telemetry Dashboard powered by ESP32, ESPHome, and Firebase Realtime Database.">
+  <meta name="description" content="Modern Cyber-Pixel IoT Telemetry Dashboard with Light/Dark theme support powered by ESP32, ESPHome, and Firebase Realtime Database.">
 
   <!-- Combined Modern & Pixel Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +35,7 @@
 
   <div class="app-container">
     
-    <!-- Modern Cyber Header -->
+    <!-- Modern Cyber Header with 3D Depth -->
     <header class="dashboard-header cyber-card">
       <div class="brand-section">
         <div class="brand-icon-box">
@@ -44,7 +44,7 @@
         <div>
           <div class="brand-title-row">
             <h1 class="brand-title">ESP32 TELEMETRY HUB</h1>
-            <span class="pixel-tag badge-cyan">v2.0 HUD</span>
+            <span class="pixel-tag badge-cyan">v2.1 HUD</span>
           </div>
           <div class="brand-subtitle">
             <span class="text-cyan"><i class="fas fa-bolt me-1"></i>ESPHome REST</span>
@@ -63,6 +63,12 @@
           <span id="statusText" class="mono-text">CONNECTING...</span>
         </div>
 
+        <!-- Light / Dark Theme Toggle Switch -->
+        <button class="btn btn-cyber" id="btnToggleTheme" title="Toggle Light / Dark Mode">
+          <i class="fas fa-sun text-amber" id="themeIcon"></i>
+          <span id="themeText">DAY</span>
+        </button>
+
         <!-- Action Controls -->
         <button class="btn btn-cyber" id="btnOpenSettings" title="Configure Firebase Database URL">
           <i class="fas fa-sliders text-amber"></i>
@@ -76,7 +82,7 @@
       </div>
     </header>
 
-    <!-- KPI Metric Cards Grid -->
+    <!-- KPI Metric Cards Grid with 3D Depth & Pixel Segment Meters -->
     <section class="kpi-grid">
       <!-- Temperature Card -->
       <div class="kpi-card card-temp cyber-card">
@@ -92,6 +98,14 @@
         <div class="kpi-body">
           <span class="kpi-value text-redstone" id="valTemp">--.-</span>
           <span class="kpi-unit">°C</span>
+        </div>
+        <!-- 5-Segment Pixel Meter -->
+        <div class="pixel-meter meter-temp" id="meterTemp">
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
         </div>
         <div class="kpi-footer">
           <span class="mono-text" id="minMaxTemp">MIN: --.-°C | MAX: --.-°C</span>
@@ -114,6 +128,14 @@
           <span class="kpi-value text-cyan" id="valHumi">--.-</span>
           <span class="kpi-unit">%</span>
         </div>
+        <!-- 5-Segment Pixel Meter -->
+        <div class="pixel-meter meter-humi" id="meterHumi">
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+        </div>
         <div class="kpi-footer">
           <span class="mono-text" id="minMaxHumi">MIN: --.-% | MAX: --.-%</span>
           <span class="pixel-tag badge-neutral" id="badgeHumi">WAITING</span>
@@ -135,6 +157,14 @@
           <span class="kpi-value text-amber" id="valLight">---</span>
           <span class="kpi-unit">lx</span>
         </div>
+        <!-- 5-Segment Pixel Meter -->
+        <div class="pixel-meter meter-light" id="meterLight">
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+        </div>
         <div class="kpi-footer">
           <span class="mono-text" id="minMaxLight">MIN: --- lx | MAX: --- lx</span>
           <span class="pixel-tag badge-neutral" id="badgeLight">WAITING</span>
@@ -154,6 +184,14 @@
         </div>
         <div class="kpi-body">
           <span class="kpi-value mono-text" style="font-size: 30px;" id="lastSeenTime">--:--:--</span>
+        </div>
+        <!-- Heartbeat Meter -->
+        <div class="pixel-meter meter-system" id="meterSystem">
+          <div class="meter-segment active"></div>
+          <div class="meter-segment active"></div>
+          <div class="meter-segment active"></div>
+          <div class="meter-segment active"></div>
+          <div class="meter-segment active"></div>
         </div>
         <div class="kpi-footer">
           <span class="mono-text"><i class="far fa-clock me-1"></i><span id="relativeTime">Awaiting sync</span></span>
