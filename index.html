@@ -87,9 +87,41 @@
       </div>
     </header>
 
-    <!-- KPI Metric Cards Grid with 3D Depth & Pixel Segment Meters -->
+    <!-- System Health HUD Bar -->
+    <div class="system-health-bar">
+      <div class="health-item">
+        <span class="health-label"><i class="fas fa-microchip text-emerald me-1"></i>NODE:</span>
+        <span class="pixel-tag badge-cyan" id="healthDeviceId">esp32-01</span>
+      </div>
+
+      <div class="health-item">
+        <span class="health-label"><i class="fas fa-shield-halved text-emerald me-1"></i>STATUS:</span>
+        <span class="pixel-tag badge-neutral" id="deviceStatusBadge">STANDBY</span>
+      </div>
+
+      <div class="health-item">
+        <span class="health-label"><i class="far fa-clock text-muted me-1"></i>HEARTBEAT:</span>
+        <span class="mono-text text-emerald" id="relativeTime">Awaiting sync</span>
+      </div>
+
+      <div class="health-item">
+        <span class="health-label"><i class="fas fa-satellite-dish text-cyan me-1"></i>LAST SYNC:</span>
+        <span class="health-value mono-text" id="lastSeenTime">--:--:--</span>
+      </div>
+
+      <!-- Heartbeat Meter -->
+      <div class="pixel-meter meter-system" id="meterSystem" style="width: 110px; margin-bottom: 0;">
+        <div class="meter-segment active"></div>
+        <div class="meter-segment active"></div>
+        <div class="meter-segment active"></div>
+        <div class="meter-segment active"></div>
+        <div class="meter-segment active"></div>
+      </div>
+    </div>
+
+    <!-- 6-Sensor Environmental Suite: 3x2 Matrix Grid -->
     <section class="kpi-grid">
-      <!-- Temperature Card -->
+      <!-- Sensor 01: Temperature -->
       <div class="kpi-card card-temp cyber-card">
         <div class="kpi-header">
           <div class="kpi-title-group">
@@ -104,7 +136,7 @@
           <span class="kpi-value text-redstone" id="valTemp">--.-</span>
           <span class="kpi-unit">°C</span>
         </div>
-        <!-- 5-Segment Pixel Meter -->
+        <!-- 5-Segment Pixel Meter (25-35°C) -->
         <div class="pixel-meter meter-temp" id="meterTemp">
           <div class="meter-segment"></div>
           <div class="meter-segment"></div>
@@ -118,7 +150,7 @@
         </div>
       </div>
 
-      <!-- Humidity Card -->
+      <!-- Sensor 02: Relative Humidity -->
       <div class="kpi-card card-humi cyber-card">
         <div class="kpi-header">
           <div class="kpi-title-group">
@@ -133,7 +165,7 @@
           <span class="kpi-value text-cyan" id="valHumi">--.-</span>
           <span class="kpi-unit">%</span>
         </div>
-        <!-- 5-Segment Pixel Meter -->
+        <!-- 5-Segment Pixel Meter (50-80%) -->
         <div class="pixel-meter meter-humi" id="meterHumi">
           <div class="meter-segment"></div>
           <div class="meter-segment"></div>
@@ -147,7 +179,7 @@
         </div>
       </div>
 
-      <!-- Light Intensity Card -->
+      <!-- Sensor 03: Ambient Light -->
       <div class="kpi-card card-light cyber-card">
         <div class="kpi-header">
           <div class="kpi-title-group">
@@ -162,7 +194,7 @@
           <span class="kpi-value text-amber" id="valLight">---</span>
           <span class="kpi-unit">lx</span>
         </div>
-        <!-- 5-Segment Pixel Meter -->
+        <!-- 5-Segment Pixel Meter (100-1000 lx) -->
         <div class="pixel-meter meter-light" id="meterLight">
           <div class="meter-segment"></div>
           <div class="meter-segment"></div>
@@ -176,31 +208,90 @@
         </div>
       </div>
 
-      <!-- Device State Card -->
-      <div class="kpi-card card-system cyber-card">
+      <!-- Sensor 04: Air Pressure -->
+      <div class="kpi-card card-press cyber-card">
         <div class="kpi-header">
           <div class="kpi-title-group">
-            <span class="pixel-tag text-emerald">SYSTEM // HEALTH</span>
-            <span class="kpi-title">DEVICE STATE</span>
+            <span class="pixel-tag text-purple">SENSOR // 04</span>
+            <span class="kpi-title">AIR PRESSURE</span>
           </div>
-          <div class="kpi-icon-box icon-system">
-            <i class="fas fa-microchip"></i>
+          <div class="kpi-icon-box icon-press">
+            <i class="fas fa-gauge-high"></i>
           </div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-value mono-text" style="font-size: 30px;" id="lastSeenTime">--:--:--</span>
+          <span class="kpi-value text-purple" id="valPress">----.-</span>
+          <span class="kpi-unit">hPa</span>
         </div>
-        <!-- Heartbeat Meter -->
-        <div class="pixel-meter meter-system" id="meterSystem">
-          <div class="meter-segment active"></div>
-          <div class="meter-segment active"></div>
-          <div class="meter-segment active"></div>
-          <div class="meter-segment active"></div>
-          <div class="meter-segment active"></div>
+        <!-- 5-Segment Pixel Meter (950-1050 hPa) -->
+        <div class="pixel-meter meter-press" id="meterPress">
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
         </div>
         <div class="kpi-footer">
-          <span class="mono-text"><i class="far fa-clock me-1"></i><span id="relativeTime">Awaiting sync</span></span>
-          <span class="pixel-tag badge-neutral" id="deviceStatusBadge">STANDBY</span>
+          <span class="mono-text" id="minMaxPress">MIN: ----.- hPa | MAX: ----.- hPa</span>
+          <span class="pixel-tag badge-neutral" id="badgePress">WAITING</span>
+        </div>
+      </div>
+
+      <!-- Sensor 05: Carbon Dioxide (CO2) -->
+      <div class="kpi-card card-co2 cyber-card">
+        <div class="kpi-header">
+          <div class="kpi-title-group">
+            <span class="pixel-tag text-emerald">SENSOR // 05</span>
+            <span class="kpi-title">CARBON DIOXIDE</span>
+          </div>
+          <div class="kpi-icon-box icon-co2">
+            <i class="fas fa-wind"></i>
+          </div>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value text-emerald" id="valCo2">---</span>
+          <span class="kpi-unit">ppm</span>
+        </div>
+        <!-- 5-Segment Pixel Meter (400-1200 ppm) -->
+        <div class="pixel-meter meter-co2" id="meterCo2">
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+        </div>
+        <div class="kpi-footer">
+          <span class="mono-text" id="minMaxCo2">MIN: --- ppm | MAX: --- ppm</span>
+          <span class="pixel-tag badge-neutral" id="badgeCo2">WAITING</span>
+        </div>
+      </div>
+
+      <!-- Sensor 06: Sound Noise Level -->
+      <div class="kpi-card card-noise cyber-card">
+        <div class="kpi-header">
+          <div class="kpi-title-group">
+            <span class="pixel-tag text-blue">SENSOR // 06</span>
+            <span class="kpi-title">SOUND NOISE LEVEL</span>
+          </div>
+          <div class="kpi-icon-box icon-noise">
+            <i class="fas fa-volume-high"></i>
+          </div>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value text-blue" id="valNoise">--.-</span>
+          <span class="kpi-unit">dB</span>
+        </div>
+        <!-- 5-Segment Pixel Meter (30-90 dB) -->
+        <div class="pixel-meter meter-noise" id="meterNoise">
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+          <div class="meter-segment"></div>
+        </div>
+        <div class="kpi-footer">
+          <span class="mono-text" id="minMaxNoise">MIN: --.- dB | MAX: --.- dB</span>
+          <span class="pixel-tag badge-neutral" id="badgeNoise">WAITING</span>
         </div>
       </div>
     </section>
@@ -210,13 +301,16 @@
       <div class="chart-header">
         <div class="section-title">
           <i class="fas fa-chart-line text-cyan me-2"></i>
-          <span>REALTIME TELEMETRY TIMELINE (/HISTORY)</span>
+          <span>REALTIME 6-SENSOR TELEMETRY TIMELINE (/HISTORY)</span>
         </div>
         <div class="chart-controls">
           <button class="chart-filter-btn active" data-mode="combined">ALL SENSORS</button>
           <button class="chart-filter-btn" data-mode="temp">TEMP</button>
           <button class="chart-filter-btn" data-mode="humi">HUMI</button>
           <button class="chart-filter-btn" data-mode="light">LIGHT</button>
+          <button class="chart-filter-btn" data-mode="press">PRESS</button>
+          <button class="chart-filter-btn" data-mode="co2">CO2</button>
+          <button class="chart-filter-btn" data-mode="noise">NOISE</button>
         </div>
       </div>
       <div class="chart-container">
@@ -224,7 +318,7 @@
       </div>
     </section>
 
-    <!-- 6-Column Telemetry Stream Table -->
+    <!-- 9-Column Telemetry Stream Table -->
     <section class="table-section cyber-card">
       <div class="table-header">
         <div class="section-title">
@@ -265,16 +359,19 @@
           <thead>
             <tr>
               <th><i class="fas fa-hashtag me-1 text-cyan"></i>DEVICE ID</th>
-              <th><i class="far fa-clock me-1 text-muted"></i>TIMESTAMP (SNTP - ASIA/BANGKOK)</th>
-              <th><i class="fas fa-temperature-half me-1 text-redstone"></i>TEMPERATURE</th>
-              <th><i class="fas fa-water me-1 text-cyan"></i>HUMIDITY</th>
-              <th><i class="fas fa-lightbulb me-1 text-amber"></i>LIGHT</th>
+              <th><i class="far fa-clock me-1 text-muted"></i>TIMESTAMP (SNTP)</th>
+              <th><i class="fas fa-temperature-half me-1 text-redstone"></i>TEMP (°C)</th>
+              <th><i class="fas fa-water me-1 text-cyan"></i>HUMI (%)</th>
+              <th><i class="fas fa-lightbulb me-1 text-amber"></i>LIGHT (lx)</th>
+              <th><i class="fas fa-gauge-high me-1 text-purple"></i>PRESS (hPa)</th>
+              <th><i class="fas fa-wind me-1 text-emerald"></i>CO2 (ppm)</th>
+              <th><i class="fas fa-volume-high me-1 text-blue"></i>NOISE (dB)</th>
               <th><i class="fas fa-shield-halved me-1 text-emerald"></i>STATUS</th>
             </tr>
           </thead>
           <tbody id="historyTableBody">
             <tr id="emptyState">
-              <td colspan="6" class="text-center py-6 text-muted" style="text-align: center; padding: 32px;">
+              <td colspan="9" class="text-center py-6 text-muted" style="text-align: center; padding: 32px;">
                 <i class="fas fa-satellite me-2 text-cyan"></i>Listening for incoming telemetry packets from Firebase Realtime Database...
               </td>
             </tr>
@@ -399,6 +496,21 @@
       <div class="form-group">
         <label class="form-label">SIMULATED LIGHT (LX)</label>
         <input type="number" step="1" id="simLight" class="form-input" value="520">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">SIMULATED AIR PRESSURE (HPA)</label>
+        <input type="number" step="0.1" id="simPress" class="form-input" value="1013.2">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">SIMULATED CO2 (PPM)</label>
+        <input type="number" step="1" id="simCo2" class="form-input" value="520">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">SIMULATED SOUND NOISE (DB)</label>
+        <input type="number" step="0.1" id="simNoise" class="form-input" value="45.5">
       </div>
 
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
