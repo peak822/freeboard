@@ -170,6 +170,9 @@ class FirebaseService {
               const hasTemp = item.temp !== undefined && item.temp !== null && !isNaN(Number(item.temp));
               const hasHumi = item.humi !== undefined && item.humi !== null && !isNaN(Number(item.humi));
               const hasLight = item.light !== undefined && item.light !== null && !isNaN(Number(item.light));
+              const hasPress = item.press !== undefined && item.press !== null && !isNaN(Number(item.press));
+              const hasCo2 = item.co2 !== undefined && item.co2 !== null && !isNaN(Number(item.co2));
+              const hasNoise = item.noise !== undefined && item.noise !== null && !isNaN(Number(item.noise));
               const hasTimestamp = item.timestamp !== undefined && item.timestamp !== null && !isNaN(Number(item.timestamp));
 
               const record = {
@@ -178,6 +181,9 @@ class FirebaseService {
                 temp: hasTemp ? Number(item.temp) : null,
                 humi: hasHumi ? Number(item.humi) : null,
                 light: hasLight ? Number(item.light) : null,
+                press: hasPress ? Number(item.press) : null,
+                co2: hasCo2 ? Number(item.co2) : null,
+                noise: hasNoise ? Number(item.noise) : null,
                 timestamp: hasTimestamp ? Number(item.timestamp) : null,
                 raw: item
               };
@@ -209,7 +215,7 @@ class FirebaseService {
 
         // Print Diagnostic Log to Console
         console.info(
-          `%c[FIREBASE DIAGNOSTICS]%c Device: ${deviceId} | Received: ${historyList.length} | Valid (all 4 fields): ${validCount} | Incomplete: ${incompleteCount} | Display Limit: ${this.queryLimit || 'Unlimited'}`,
+          `%c[FIREBASE DIAGNOSTICS]%c Device: ${deviceId} | Received: ${historyList.length} | Valid: ${validCount} | Incomplete: ${incompleteCount} | Display Limit: ${this.queryLimit || 'Unlimited'}`,
           "background: #00f2fe; color: #041221; font-weight: bold; padding: 2px 6px; border-radius: 4px;",
           "color: #38bdf8; font-weight: 500;"
         );
@@ -271,9 +277,9 @@ class FirebaseService {
   /**
    * ESP32 Simulation Utility:
    * Perform HTTP PUT to /latest.json and HTTP POST to /history.json via REST
-   * Exactly mimicking ESPHome's L5 dual-operation!
+   * Exactly mimicking ESPHome's L5 6-sensor dual-operation!
    */
-  async simulateEsp32Upload(temp, humi, light, customTimestamp = null) {
+  async simulateEsp32Upload(temp, humi, light, press = 1013.2, co2 = 520, noise = 45.5, customTimestamp = null) {
     const config = getFirebaseConfig();
     let dbUrl = config.databaseURL.replace(/\/$/, "");
 
@@ -290,6 +296,15 @@ class FirebaseService {
     }
     if (light !== undefined && light !== null && !isNaN(light)) {
       payload.light = Math.round(Number(light));
+    }
+    if (press !== undefined && press !== null && !isNaN(press)) {
+      payload.press = parseFloat(Number(press).toFixed(1));
+    }
+    if (co2 !== undefined && co2 !== null && !isNaN(co2)) {
+      payload.co2 = Math.round(Number(co2));
+    }
+    if (noise !== undefined && noise !== null && !isNaN(noise)) {
+      payload.noise = parseFloat(Number(noise).toFixed(1));
     }
     if (timestamp !== null) {
       payload.timestamp = timestamp;
