@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ESP32 Realtime Telemetry Dashboard | Firebase RTDB</title>
+  <meta name="description" content="Realtime IoT Sensor Telemetry Dashboard powered by ESP32, ESPHome, and Firebase Realtime Database.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Firebase App & Realtime Database SDK (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <!-- Initial Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <h3 style="font-weight: 700; letter-spacing: -0.5px;">ESP32 IoT Dashboard</h3>
+    <p class="text-secondary" style="font-size: 13px; margin-top: 6px;">Initializing Firebase Realtime Stream...</p>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Header Section -->
+    <header class="dashboard-header">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <i class="fas fa-satellite-dish"></i>
+        </div>
+        <div>
+          <h1 class="brand-title">ESP32 TELEMETRY HUB</h1>
+          <div class="brand-subtitle">
+            <span><i class="fas fa-bolt text-accent"></i> ESPHome REST API</span>
+            <span class="text-muted">•</span>
+            <span><i class="fas fa-fire text-amber"></i> Firebase RTDB</span>
+            <span class="text-muted">•</span>
+            <span><i class="fab fa-github"></i> GitHub Pages</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-status-group">
+        <!-- Live Connection Status -->
+        <div class="status-pill">
+          <span class="status-dot dot-connecting" id="statusDot"></span>
+          <span id="statusText" class="mono">Connecting...</span>
+        </div>
+
+        <!-- Action Controls -->
+        <button class="btn" id="btnOpenSettings" title="Configure Firebase Database URL">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </button>
+
+        <button class="btn btn-primary" id="btnOpenSim" title="Test dual upload without hardware">
+          <i class="fas fa-vial"></i>
+          <span>ESP32 Simulator</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Metric Cards Grid -->
+    <section class="kpi-grid">
+      <!-- Temperature Card -->
+      <div class="kpi-card card-temp">
+        <div class="kpi-header">
+          <span class="kpi-title">Temperature</span>
+          <div class="kpi-icon-wrapper">
+            <i class="fas fa-temperature-high"></i>
+          </div>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value mono text-temp" id="valTemp">--.-</span>
+          <span class="kpi-unit">°C</span>
+        </div>
+        <div class="kpi-footer">
+          <span class="mono" id="minMaxTemp">Min: --.-°C | Max: --.-°C</span>
+          <span class="badge badge-neutral" id="badgeTemp">Awaiting Data</span>
+        </div>
+      </div>
+
+      <!-- Humidity Card -->
+      <div class="kpi-card card-humi">
+        <div class="kpi-header">
+          <span class="kpi-title">Relative Humidity</span>
+          <div class="kpi-icon-wrapper">
+            <i class="fas fa-droplet"></i>
+          </div>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value mono text-humi" id="valHumi">--.-</span>
+          <span class="kpi-unit">%</span>
+        </div>
+        <div class="kpi-footer">
+          <span class="mono" id="minMaxHumi">Min: --.-% | Max: --.-%</span>
+          <span class="badge badge-neutral" id="badgeHumi">Awaiting Data</span>
+        </div>
+      </div>
+
+      <!-- Light Intensity Card -->
+      <div class="kpi-card card-light">
+        <div class="kpi-header">
+          <span class="kpi-title">Ambient Light</span>
+          <div class="kpi-icon-wrapper">
+            <i class="fas fa-sun"></i>
+          </div>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value mono text-light" id="valLight">---</span>
+          <span class="kpi-unit">lx</span>
+        </div>
+        <div class="kpi-footer">
+          <span class="mono" id="minMaxLight">Min: --- lx | Max: --- lx</span>
+          <span class="badge badge-neutral" id="badgeLight">Awaiting Data</span>
+        </div>
+      </div>
+
+      <!-- System & Hardware Health Card -->
+      <div class="kpi-card card-system">
+        <div class="kpi-header">
+          <span class="kpi-title">ESP32 Device State</span>
+          <div class="kpi-icon-wrapper">
+            <i class="fas fa-microchip"></i>
+          </div>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value mono" style="font-size: 26px;" id="lastSeenTime">--:--:--</span>
+        </div>
+        <div class="kpi-footer">
+          <span class="mono"><i class="fas fa-clock me-1"></i><span id="relativeTime">Awaiting sync</span></span>
+          <span class="badge badge-neutral" id="deviceStatusBadge">INITIALIZING</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Historical Telemetry Chart -->
+    <section class="chart-section">
+      <div class="chart-header">
+        <div class="section-title">
+          <i class="fas fa-chart-line text-accent"></i>
+          <span>Realtime Telemetry Timeline (Firebase /history)</span>
+        </div>
+        <div class="chart-controls">
+          <button class="chart-filter-btn active" data-mode="combined">All Sensors</button>
+          <button class="chart-filter-btn" data-mode="temp">Temperature</button>
+          <button class="chart-filter-btn" data-mode="humi">Humidity</button>
+          <button class="chart-filter-btn" data-mode="light">Light</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="telemetryChart"></canvas>
+      </div>
+    </section>
+
+    <!-- Telemetry Records Table (6 Columns Requirement) -->
+    <section class="table-section">
+      <div class="table-header">
+        <div class="section-title">
+          <i class="fas fa-table-list text-accent"></i>
+          <span>Historical Sensor Stream</span>
+          <span class="badge badge-info mono ms-2" id="recordCount">0 records</span>
+        </div>
+        <div>
+          <button class="btn" id="btnExportCsv">
+            <i class="fas fa-download"></i>
+            <span>Export CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="telemetry-table">
+          <thead>
+            <tr>
+              <th><i class="fas fa-hashtag me-1"></i>Device ID</th>
+              <th><i class="far fa-clock me-1"></i>Timestamp (SNTP)</th>
+              <th><i class="fas fa-temperature-half me-1"></i>Temperature</th>
+              <th><i class="fas fa-water me-1"></i>Humidity</th>
+              <th><i class="fas fa-lightbulb me-1"></i>Light</th>
+              <th><i class="fas fa-shield-halved me-1"></i>Derived Status</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr id="emptyState">
+              <td colspan="6" class="text-center py-6 text-muted" style="text-align: center; padding: 30px;">
+                <i class="fas fa-satellite me-2"></i>Listening for incoming telemetry packets from Firebase Realtime Database...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Settings Modal Dialog -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-sliders me-2 text-accent"></i>Firebase RTDB Settings</h3>
+        <button class="btn" id="btnCloseSettings" style="padding: 4px 8px; border: none; background: transparent;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="formFirebaseSettings">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="inputDbUrl">Realtime Database URL *</label>
+            <input type="url" id="inputDbUrl" class="form-input" placeholder="https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app" required>
+            <div class="form-help">Enter the Database URL found in your Firebase Console Realtime Database tab.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputApiKey">Web API Key (Optional)</label>
+            <input type="text" id="inputApiKey" class="form-input" placeholder="AIzaSy...">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputProjectId">Project ID (Optional)</label>
+            <input type="text" id="inputProjectId" class="form-input" placeholder="iot-esp32-project">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputAuthDomain">Auth Domain (Optional)</label>
+            <input type="text" id="inputAuthDomain" class="form-input" placeholder="iot-esp32-project.firebaseapp.com">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" id="btnResetSettings">Reset to Default</button>
+          <button type="submit" class="btn btn-primary">Save & Connect</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ESP32 REST Simulator Drawer -->
+  <aside class="drawer" id="simulatorDrawer">
+    <div class="drawer-header">
+      <h3 style="font-size: 16px; font-weight: 700;">
+        <i class="fas fa-flask me-2 text-accent"></i>ESP32 REST Simulator
+      </h3>
+      <button class="btn" id="btnCloseSim" style="padding: 4px 8px; border: none; background: transparent;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="drawer-body">
+      <p class="text-secondary" style="font-size: 12px; margin-bottom: 18px;">
+        Emulates ESPHome Level 5 dual REST pipeline: PUT to <code>/latest.json</code> and POST to <code>/history.json</code> directly from the browser.
+      </p>
+
+      <div class="form-group">
+        <label class="form-label">Simulated Temperature (°C)</label>
+        <input type="number" step="0.1" id="simTemp" class="form-input" value="28.5">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Simulated Humidity (%)</label>
+        <input type="number" step="0.1" id="simHumi" class="form-input" value="64.2">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Simulated Ambient Light (lx)</label>
+        <input type="number" step="1" id="simLight" class="form-input" value="520">
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button type="button" class="btn" id="btnRandomMock" style="flex: 1;">
+          <i class="fas fa-dice me-1"></i> Randomize
+        </button>
+        <button type="button" class="btn btn-primary" id="btnSendMock" style="flex: 2;">
+          <i class="fas fa-paper-plane me-1"></i> Send L5 Payload
+        </button>
+      </div>
+
+      <label class="form-label">Simulation Log Output</label>
+      <div class="sim-console" id="simLog">
+        <div>[SYSTEM] Simulator initialized. Ready to test REST endpoints.</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Application Logic Scripts -->
+  <script src="js/firebase-config.js"></script>
+  <script src="js/firebase-service.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+# ==============================================================================
+# L2 — Replace Constant Data with Random Sensors
+# Path: /lab/esp32-01/latest.json (Method: PUT)
+# Sensors:
+#   - temp:  25.0 - 35.0 °C (update 5s)
+#   - humi:  50.0 - 80.0 %  (update 5s)
+#   - light: 100 - 1000 lx  (update 5s)
+# Upload interval: 10s
+# ==============================================================================
+
+esphome:
+  name: esp32-01
+  comment: "L2 - Random Sensors to Firebase RTDB (Latest PUT)"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: none
+
+http_request:
+  timeout: 10s
+
+sensor:
+  - platform: template
+    name: "Temperature"
+    id: temp
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      return 25.0 + random_float() * 10.0;
+
+  - platform: template
+    name: "Humidity"
+    id: humi
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      return 50.0 + random_float() * 30.0;
+
+  - platform: template
+    name: "Light"
+    id: light
+    unit_of_measurement: "lx"
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: |-
+      return 100.0 + random_float() * 900.0;
+
+interval:
+  - interval: 10s
+    then:
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - http_request.put:
+                url: !secret firebase_latest_url
+                json: |-
+                  root["temp"] = id(temp).state;
+                  root["humi"] = id(humi).state;
+                  root["light"] = id(light).state;
+                on_response:
+                  then:
+                    - logger.log:
+                        format: "Firebase HTTP status = %d"
+                        args: ['status_code']
+          else:
+            - logger.log: "Skip Firebase: WiFi not connected"

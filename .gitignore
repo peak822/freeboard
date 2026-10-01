@@ -1,0 +1,15 @@
+# ESPHome
+.esphome/
+esphome/.esphome/
+esphome/secrets.yaml
+
+# Secrets
+*.local
+.env
+.env.local
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

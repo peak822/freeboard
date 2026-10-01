@@ -1,0 +1,46 @@
+# ==============================================================================
+# L1 — Send Constant Data to Firebase Realtime Database
+# Path: /lab/esp32-01/latest.json (Method: PUT)
+# Constant values: temp = 25.5, humi = 60.0, light = 300.0
+# ==============================================================================
+
+esphome:
+  name: esp32-01
+  comment: "L1 - Constant Data to Firebase RTDB"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: none
+
+http_request:
+  timeout: 10s
+
+interval:
+  - interval: 10s
+    then:
+      - if:
+          condition:
+            wifi.connected:
+          then:
+            - http_request.put:
+                url: !secret firebase_latest_url
+                json: |-
+                  root["temp"] = 25.5;
+                  root["humi"] = 60.0;
+                  root["light"] = 300.0;
+                on_response:
+                  then:
+                    - logger.log:
+                        format: "Firebase HTTP status = %d"
+                        args: ['status_code']
+          else:
+            - logger.log: "Skip Firebase: WiFi not connected"
