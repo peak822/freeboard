@@ -1,13 +1,13 @@
 /**
  * WebGL Pixel Snow Background Controller
- * Powered by Three.js and Custom GLSL Raymarching Shader - Refined Fine-Pixel Edition
+ * Powered by Three.js and Custom GLSL Raymarching Shader - Ultra High Performance Edition
  * 
- * Features:
- * - Delicate 6-Arm Fractal Cyber Snowflake variant (Variant = 2.0)
- * - True alpha transparency blending (no dark/black blocks in Light Mode)
- * - Fine-pixel resolution matrix (no oversized chunky blocks)
- * - Optimized theme adaptation for Midnight Obsidian (Dark) & Daylight Quartz (Light)
- * - Automatic IntersectionObserver visibility pausing (60fps performance)
+ * Performance Optimizations:
+ * - Low-fillrate internal buffer (setPixelRatio: 0.5) with CSS scaling (saves 75% GPU)
+ * - Optimized raymarching bound (40 max iterations) with fast-exit early return
+ * - Delta-timed frame throttling (~35 FPS) for smooth zero-lag background animation
+ * - Page Visibility & IntersectionObserver auto-pause
+ * - True alpha blending for clean, translucent snowflakes in both Dark and Light modes
  */
 
 (function () {
@@ -37,26 +37,21 @@
     uniform float uVariant;
     uniform float uDirection;
 
-    // Precomputed mathematical constants
+    // Mathematical constants
     #define PI 3.14159265
     #define PI_OVER_6 0.5235988
     #define PI_OVER_3 1.0471976
-    #define INV_SQRT3 0.57735027
     #define M1 1597334677U
     #define M2 3812015801U
     #define M3 3299493293U
     #define F0 2.3283064e-10
 
-    // Optimized integer hashing
     #define hash(n) (n * (n ^ (n >> 15)))
     #define coord3(p) (uvec3(p).x * M1 ^ uvec3(p).y * M2 ^ uvec3(p).z * M3)
 
-    // Precomputed camera basis vectors
     const vec3 camK = vec3(0.57735027, 0.57735027, 0.57735027);
     const vec3 camI = vec3(0.70710678, 0.0, -0.70710678);
     const vec3 camJ = vec3(-0.40824829, 0.81649658, -0.40824829);
-
-    // Precomputed branch direction for snowflake arms
     const vec2 b1d = vec2(0.574, 0.819);
 
     vec3 hash3(uint n) {
@@ -78,7 +73,6 @@
     }
 
     void main() {
-      // Fine-pixel quantization grid
       float invPixelRes = 1.0 / uPixelResolution;
       float pixelSize = max(1.0, floor(0.5 + uResolution.x * invPixelRes));
       float invPixelSize = 1.0 / pixelSize;
@@ -90,7 +84,6 @@
       vec3 ray = normalize(vec3((fragCoord - res * 0.5) * invResX, 1.0));
       ray = ray.x * camI + ray.y * camJ + ray.z * camK;
 
-      // Time and wind drift simulation
       float timeSpeed = uTime * uSpeed;
       float windX = cos(uDirection) * 0.35;
       float windY = sin(uDirection) * 0.35;
@@ -110,7 +103,8 @@
       vec3 timeAnim = timeSpeed * 0.1 * vec3(7.0, 8.0, 5.0);
 
       float t = 0.0;
-      for (int i = 0; i < 110; i++) {
+      // Fast lightweight raymarch (40 iterations max)
+      for (int i = 0; i < 40; i++) {
         if (t >= uFarPlane) break;
         
         vec3 fpos = floor(pos);
@@ -150,8 +144,7 @@
               float intensity = exp2(-(t + toIntersection) * invDepthFade) *
                                min(1.0, flakeSizeRatio * flakeSizeRatio) * uBrightness;
               
-              // Alpha blending: smoothly fade opacity with distance and intensity
-              float alpha = clamp(pow(intensity, uGamma), 0.0, 0.85);
+              float alpha = clamp(pow(intensity, uGamma), 0.0, 0.80);
               gl_FragColor = vec4(uColor, alpha);
               return;
             }
@@ -179,35 +172,37 @@
       this.animationId = null;
       this.container = null;
       this.isVisible = true;
+      this.isTabActive = true;
       this.startTime = performance.now();
+      this.lastFrameTime = performance.now();
       this.resizeTimeout = null;
 
-      // Theme-specific visual calibrations (Smaller, subtle, elegant)
+      // Theme-specific visual calibrations (Lightweight, subtle, delicate)
       this.themeConfigs = {
         dark: {
           color: '#38bdf8',       // Cyber Cyan Neon
-          flakeSize: 0.006,       // Delicate snowflake size
-          minFlakeSize: 0.85,
-          pixelResolution: 420,   // Fine retro pixel resolution
+          flakeSize: 0.005,       // Small elegant snowflake
+          minFlakeSize: 0.75,
+          pixelResolution: 380,   // Fine retro pixel resolution
           brightness: 1.00,
-          density: 0.22,          // Airy, elegant particle distribution
-          speed: 0.95,            // Gentle drift
+          density: 0.18,          // Clean airy distribution
+          speed: 0.85,            // Relaxed drift
           depthFade: 9.0,
           gamma: 0.65,
           variant: 2.0,           // 6-arm fractal snowflake
           direction: 125
         },
         light: {
-          color: '#0284c7',       // Soft Azure Cyan (Translucent on light backgrounds)
-          flakeSize: 0.005,       // Even smaller on light mode for crystal subtlety
-          minFlakeSize: 0.75,
-          pixelResolution: 420,   // Crisp fine pixels
-          brightness: 0.75,
-          density: 0.18,          // Clean airy density
-          speed: 0.85,            // Relaxed drift
-          depthFade: 11.0,
+          color: '#0284c7',       // Translucent Soft Cyan Azure
+          flakeSize: 0.004,       // Small crystal snowflake
+          minFlakeSize: 0.70,
+          pixelResolution: 380,
+          brightness: 0.70,
+          density: 0.15,          // Minimal clean distribution
+          speed: 0.75,
+          depthFade: 10.0,
           gamma: 0.75,
-          variant: 2.0,           // 6-arm fractal snowflake
+          variant: 2.0,
           direction: 125
         }
       };
@@ -240,10 +235,12 @@
         premultipliedAlpha: false,
         powerPreference: "high-performance",
         stencil: false,
-        depth: false
+        depth: false,
+        precision: "mediump"
       });
 
-      this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      // Crucial Performance: 0.5x internal pixel ratio cuts fillrate workload by 75%
+      this.renderer.setPixelRatio(0.5);
       this.renderer.setSize(w, h);
       this.renderer.setClearColor(0x000000, 0);
 
@@ -263,7 +260,7 @@
           uPixelResolution: { value: config.pixelResolution },
           uSpeed: { value: config.speed },
           uDepthFade: { value: config.depthFade },
-          uFarPlane: { value: 20.0 },
+          uFarPlane: { value: 16.0 }, // Capped depth bound
           uColor: { value: new THREE.Vector3(colorVec.r, colorVec.g, colorVec.b) },
           uBrightness: { value: config.brightness },
           uGamma: { value: config.gamma },
@@ -279,7 +276,7 @@
       this.mesh = new THREE.Mesh(geometry, this.material);
       this.scene.add(this.mesh);
 
-      // Handle Resize
+      // Debounced Resize
       this.handleResize = () => {
         if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
         this.resizeTimeout = setTimeout(() => {
@@ -288,11 +285,15 @@
           const nh = window.innerHeight;
           this.renderer.setSize(nw, nh);
           this.material.uniforms.uResolution.value.set(nw, nh);
-        }, 100);
+        }, 150);
       };
       window.addEventListener("resize", this.handleResize);
 
-      // Visibility Observer
+      // Visibility API & Intersection Observer
+      document.addEventListener("visibilitychange", () => {
+        this.isTabActive = !document.hidden;
+      });
+
       if ("IntersectionObserver" in window) {
         this.observer = new IntersectionObserver(([entry]) => {
           this.isVisible = entry.isIntersecting;
@@ -300,15 +301,20 @@
         this.observer.observe(this.container);
       }
 
-      // 60fps Render Loop
-      this.animate = () => {
+      // Delta-timed ~35 FPS Animation Loop (Silky smooth with minimal GPU draw)
+      const targetInterval = 28.0; // ~35 FPS
+      this.animate = (currentTime) => {
         this.animationId = requestAnimationFrame(this.animate);
-        if (this.isVisible && this.material && this.renderer) {
-          this.material.uniforms.uTime.value = (performance.now() - this.startTime) * 0.001;
+        if (!this.isVisible || !this.isTabActive || !this.material || !this.renderer) return;
+
+        const delta = currentTime - this.lastFrameTime;
+        if (delta >= targetInterval) {
+          this.lastFrameTime = currentTime - (delta % targetInterval);
+          this.material.uniforms.uTime.value = (currentTime - this.startTime) * 0.001;
           this.renderer.render(this.scene, this.camera);
         }
       };
-      this.animate();
+      this.animate(performance.now());
     }
 
     setTheme(theme) {

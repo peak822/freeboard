@@ -365,7 +365,7 @@ class TelemetryCharts {
 
     this.chart.data.labels = labels;
     this.chart.data.datasets = filtered;
-    this.chart.update();
+    this.chart.update('none');
   }
 }
 
