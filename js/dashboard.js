@@ -1,8 +1,8 @@
 /**
  * Dashboard UI Controller for ESP32 IoT Firebase Platform - Modern Cyber-Pixel Edition
  * 
- * Coordinates telemetry cards, live status evaluation, 6-column history table,
- * 8-bit web audio feedback, settings modal, simulator drawer, and CSV export.
+ * Coordinates telemetry cards, 5-segment pixel meters, Light/Dark theme toggle,
+ * 6-column history table, 8-bit web audio feedback, settings modal, simulator drawer, and CSV export.
  */
 
 // -------------------------------------------------------------
@@ -90,11 +90,52 @@ document.addEventListener("DOMContentLoaded", () => {
   const elBadgeHumi = document.getElementById("badgeHumi");
   const elBadgeLight = document.getElementById("badgeLight");
 
+  // 5-Segment Meters
+  const elMeterTemp = document.getElementById("meterTemp");
+  const elMeterHumi = document.getElementById("meterHumi");
+  const elMeterLight = document.getElementById("meterLight");
+
   // Table & Stats
   const elHistoryTableBody = document.getElementById("historyTableBody");
   const elRecordCount = document.getElementById("recordCount");
   const elEmptyState = document.getElementById("emptyState");
   const elLoadingOverlay = document.getElementById("loadingOverlay");
+
+  // -------------------------------------------------------------
+  // Theme Switching (Light Mode vs Dark Mode)
+  // -------------------------------------------------------------
+  const btnToggleTheme = document.getElementById("btnToggleTheme");
+  const themeIcon = document.getElementById("themeIcon");
+  const themeText = document.getElementById("themeText");
+
+  let currentTheme = localStorage.getItem("esp32_iot_theme") || "dark";
+  applyTheme(currentTheme, false);
+
+  if (btnToggleTheme) {
+    btnToggleTheme.addEventListener("click", () => {
+      const newTheme = currentTheme === "dark" ? "light" : "dark";
+      applyTheme(newTheme, true);
+      playPixelSound("pop");
+    });
+  }
+
+  function applyTheme(theme, notify = false) {
+    currentTheme = theme;
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("esp32_iot_theme", theme);
+
+    if (theme === "light") {
+      if (themeIcon) themeIcon.className = "fas fa-moon text-cyan";
+      if (themeText) themeText.textContent = "NIGHT";
+      if (notify) showToast("Switched to Daylight Quartz Mode ☀️", "info");
+    } else {
+      if (themeIcon) themeIcon.className = "fas fa-sun text-amber";
+      if (themeText) themeText.textContent = "DAY";
+      if (notify) showToast("Switched to Midnight Obsidian Mode 🌙", "info");
+    }
+
+    telemetryCharts.setTheme(theme);
+  }
 
   // Automatically dismiss loading overlay after brief initial load time
   setTimeout(() => {
@@ -103,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Initialize Chart
   telemetryCharts.init();
+  telemetryCharts.setTheme(currentTheme);
 
   // Attach button click sounds globally
   document.querySelectorAll("button, .chart-filter-btn").forEach((btn) => {
@@ -152,13 +194,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const light = parseInt(data.light, 10);
     const ts = data.timestamp ? parseInt(data.timestamp, 10) : Math.floor(Date.now() / 1000);
 
-    // Update Session Stats
+    // Update Session Stats & 5-Segment Meters
     if (!isNaN(temp)) {
       sessionStats.tempMin = Math.min(sessionStats.tempMin, temp);
       sessionStats.tempMax = Math.max(sessionStats.tempMax, temp);
       elValTemp.textContent = temp.toFixed(1);
       elMinMaxTemp.textContent = `MIN: ${sessionStats.tempMin.toFixed(1)}°C | MAX: ${sessionStats.tempMax.toFixed(1)}°C`;
       
+      // Update 5-segment meter (25-35°C range)
+      const tempSegments = Math.min(5, Math.max(1, Math.round(((temp - 25) / 10) * 5)));
+      updateMeter(elMeterTemp, tempSegments);
+
       if (temp > 33.0) {
         elBadgeTemp.textContent = "HIGH TEMP";
         elBadgeTemp.className = "pixel-tag badge-danger";
@@ -173,6 +219,10 @@ document.addEventListener("DOMContentLoaded", () => {
       sessionStats.humiMax = Math.max(sessionStats.humiMax, humi);
       elValHumi.textContent = humi.toFixed(1);
       elMinMaxHumi.textContent = `MIN: ${sessionStats.humiMin.toFixed(1)}% | MAX: ${sessionStats.humiMax.toFixed(1)}%`;
+
+      // Update 5-segment meter (50-80% range)
+      const humiSegments = Math.min(5, Math.max(1, Math.round(((humi - 50) / 30) * 5)));
+      updateMeter(elMeterHumi, humiSegments);
 
       if (humi > 75.0) {
         elBadgeHumi.textContent = "HIGH HUMI";
@@ -192,6 +242,10 @@ document.addEventListener("DOMContentLoaded", () => {
       elValLight.textContent = light;
       elMinMaxLight.textContent = `MIN: ${sessionStats.lightMin} lx | MAX: ${sessionStats.lightMax} lx`;
 
+      // Update 5-segment meter (100-1000 lx range)
+      const lightSegments = Math.min(5, Math.max(1, Math.round(((light - 100) / 900) * 5)));
+      updateMeter(elMeterLight, lightSegments);
+
       if (light < 250) {
         elBadgeLight.textContent = "DIM LIGHT";
         elBadgeLight.className = "pixel-tag badge-neutral";
@@ -210,6 +264,18 @@ document.addEventListener("DOMContentLoaded", () => {
     
     evaluateDeviceStatus(ts);
     triggerCardFlash();
+  }
+
+  function updateMeter(meterElement, activeCount) {
+    if (!meterElement) return;
+    const segments = meterElement.querySelectorAll(".meter-segment");
+    segments.forEach((seg, idx) => {
+      if (idx < activeCount) {
+        seg.classList.add("active");
+      } else {
+        seg.classList.remove("active");
+      }
+    });
   }
 
   function handleHistoryUpdate(historyArray) {
@@ -320,9 +386,9 @@ document.addEventListener("DOMContentLoaded", () => {
         <tr>
           <td><span class="pixel-tag badge-cyan"><i class="fas fa-microchip me-1"></i>${IOT_CONFIG.deviceId}</span></td>
           <td class="mono-text">${formattedDate}</td>
-          <td class="mono-text text-redstone" style="font-weight:600;">${temp}</td>
-          <td class="mono-text text-cyan" style="font-weight:600;">${humi}</td>
-          <td class="mono-text text-amber" style="font-weight:600;">${light}</td>
+          <td class="mono-text text-redstone" style="font-weight:700;">${temp}</td>
+          <td class="mono-text text-cyan" style="font-weight:700;">${humi}</td>
+          <td class="mono-text text-amber" style="font-weight:700;">${light}</td>
           <td>${statusBadge}</td>
         </tr>
       `;
