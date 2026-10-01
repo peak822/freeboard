@@ -1,12 +1,13 @@
 /**
  * WebGL Pixel Snow Background Controller
- * Powered by Three.js and Custom GLSL Raymarching Shader
+ * Powered by Three.js and Custom GLSL Raymarching Shader - Refined Fine-Pixel Edition
  * 
  * Features:
- * - 6-Arm Fractal Cyber Snowflake variant (Variant = 2.0)
- * - Dynamic theme adaptation for Midnight Obsidian (Dark) & Daylight Quartz (Light)
+ * - Delicate 6-Arm Fractal Cyber Snowflake variant (Variant = 2.0)
+ * - True alpha transparency blending (no dark/black blocks in Light Mode)
+ * - Fine-pixel resolution matrix (no oversized chunky blocks)
+ * - Optimized theme adaptation for Midnight Obsidian (Dark) & Daylight Quartz (Light)
  * - Automatic IntersectionObserver visibility pausing (60fps performance)
- * - Debounced window resize synchronization
  */
 
 (function () {
@@ -77,7 +78,7 @@
     }
 
     void main() {
-      // Precompute reciprocals for pixel quantization
+      // Fine-pixel quantization grid
       float invPixelRes = 1.0 / uPixelResolution;
       float pixelSize = max(1.0, floor(0.5 + uResolution.x * invPixelRes));
       float invPixelSize = 1.0 / pixelSize;
@@ -89,10 +90,10 @@
       vec3 ray = normalize(vec3((fragCoord - res * 0.5) * invResX, 1.0));
       ray = ray.x * camI + ray.y * camJ + ray.z * camK;
 
-      // Time and wind simulation
+      // Time and wind drift simulation
       float timeSpeed = uTime * uSpeed;
-      float windX = cos(uDirection) * 0.4;
-      float windY = sin(uDirection) * 0.4;
+      float windX = cos(uDirection) * 0.35;
+      float windY = sin(uDirection) * 0.35;
       vec3 camPos = (windX * camI + windY * camJ + 0.1 * camK) * timeSpeed;
       vec3 pos = camPos;
 
@@ -109,7 +110,7 @@
       vec3 timeAnim = timeSpeed * 0.1 * vec3(7.0, 8.0, 5.0);
 
       float t = 0.0;
-      for (int i = 0; i < 128; i++) {
+      for (int i = 0; i < 110; i++) {
         if (t >= uFarPlane) break;
         
         vec3 fpos = floor(pos);
@@ -148,7 +149,10 @@
               float flakeSizeRatio = uFlakeSize / flakeSize;
               float intensity = exp2(-(t + toIntersection) * invDepthFade) *
                                min(1.0, flakeSizeRatio * flakeSizeRatio) * uBrightness;
-              gl_FragColor = vec4(uColor * pow(vec3(intensity), vec3(uGamma)), 1.0);
+              
+              // Alpha blending: smoothly fade opacity with distance and intensity
+              float alpha = clamp(pow(intensity, uGamma), 0.0, 0.85);
+              gl_FragColor = vec4(uColor, alpha);
               return;
             }
           }
@@ -161,7 +165,7 @@
         pos = mix(pos + ray * nextStep, floor(pos + ray * nextStep + 0.5), sel);
       }
 
-      gl_FragColor = vec4(0.0);
+      gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
     }
   `;
 
@@ -178,29 +182,33 @@
       this.startTime = performance.now();
       this.resizeTimeout = null;
 
-      // Theme-specific visual calibrations
+      // Theme-specific visual calibrations (Smaller, subtle, elegant)
       this.themeConfigs = {
         dark: {
-          color: '#38bdf8',       // Cyan Cyber Neon
-          brightness: 1.10,
-          density: 0.28,
-          speed: 1.15,
-          depthFade: 8.0,
-          gamma: 0.4545,
-          variant: 2.0,           // 6-arm snowflake
-          direction: 125,
-          pixelResolution: 220
+          color: '#38bdf8',       // Cyber Cyan Neon
+          flakeSize: 0.006,       // Delicate snowflake size
+          minFlakeSize: 0.85,
+          pixelResolution: 420,   // Fine retro pixel resolution
+          brightness: 1.00,
+          density: 0.22,          // Airy, elegant particle distribution
+          speed: 0.95,            // Gentle drift
+          depthFade: 9.0,
+          gamma: 0.65,
+          variant: 2.0,           // 6-arm fractal snowflake
+          direction: 125
         },
         light: {
-          color: '#0284c7',       // Deep Cyber Azure
-          brightness: 0.85,
-          density: 0.22,
-          speed: 1.00,
-          depthFade: 9.0,
-          gamma: 0.5500,
-          variant: 2.0,           // 6-arm snowflake
-          direction: 125,
-          pixelResolution: 220
+          color: '#0284c7',       // Soft Azure Cyan (Translucent on light backgrounds)
+          flakeSize: 0.005,       // Even smaller on light mode for crystal subtlety
+          minFlakeSize: 0.75,
+          pixelResolution: 420,   // Crisp fine pixels
+          brightness: 0.75,
+          density: 0.18,          // Clean airy density
+          speed: 0.85,            // Relaxed drift
+          depthFade: 11.0,
+          gamma: 0.75,
+          variant: 2.0,           // 6-arm fractal snowflake
+          direction: 125
         }
       };
     }
@@ -250,8 +258,8 @@
         uniforms: {
           uTime: { value: 0 },
           uResolution: { value: new THREE.Vector2(w, h) },
-          uFlakeSize: { value: 0.01 },
-          uMinFlakeSize: { value: 1.25 },
+          uFlakeSize: { value: config.flakeSize },
+          uMinFlakeSize: { value: config.minFlakeSize },
           uPixelResolution: { value: config.pixelResolution },
           uSpeed: { value: config.speed },
           uDepthFade: { value: config.depthFade },
@@ -263,7 +271,8 @@
           uVariant: { value: config.variant },
           uDirection: { value: (config.direction * Math.PI) / 180 }
         },
-        transparent: true
+        transparent: true,
+        blending: THREE.NormalBlending
       });
 
       const geometry = new THREE.PlaneGeometry(2, 2);
@@ -308,6 +317,9 @@
       const colorVec = new THREE.Color(config.color);
 
       this.material.uniforms.uColor.value.set(colorVec.r, colorVec.g, colorVec.b);
+      this.material.uniforms.uFlakeSize.value = config.flakeSize;
+      this.material.uniforms.uMinFlakeSize.value = config.minFlakeSize;
+      this.material.uniforms.uPixelResolution.value = config.pixelResolution;
       this.material.uniforms.uBrightness.value = config.brightness;
       this.material.uniforms.uDensity.value = config.density;
       this.material.uniforms.uSpeed.value = config.speed;
