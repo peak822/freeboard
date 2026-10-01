@@ -1,14 +1,15 @@
 /**
- * Chart.js Integration for ESP32 IoT Dashboard - Modern Cyber-Pixel Edition
+ * Chart.js Integration for ESP32 IoT Dashboard - Theme Synchronized
  * 
- * Renders high-frequency telemetry history with glowing neon curves,
- * sharp multi-axis scales, responsive tooltips, and monospaced timestamp ticks.
+ * Renders high-frequency telemetry history with glowing curves,
+ * multi-axis scales, and dynamic Light/Dark theme color palette recalculation.
  */
 
 class TelemetryCharts {
   constructor() {
     this.chart = null;
     this.currentMode = "combined"; // 'combined', 'temp', 'humi', 'light'
+    this.currentTheme = "dark";
     this.historyData = [];
   }
 
@@ -145,6 +146,36 @@ class TelemetryCharts {
     this.updateDatasets();
   }
 
+  setTheme(themeName) {
+    this.currentTheme = themeName;
+    if (!this.chart) return;
+
+    const isLight = themeName === "light";
+    const options = this.chart.options;
+
+    // Legends
+    options.plugins.legend.labels.color = isLight ? "#0f172a" : "#cbd5e1";
+
+    // Tooltip
+    options.plugins.tooltip.backgroundColor = isLight ? "rgba(255, 255, 255, 0.98)" : "rgba(13, 20, 36, 0.95)";
+    options.plugins.tooltip.titleColor = isLight ? "#0284c7" : "#00f2fe";
+    options.plugins.tooltip.bodyColor = isLight ? "#0f172a" : "#f8fafc";
+    options.plugins.tooltip.borderColor = isLight ? "#cbd5e1" : "rgba(255, 255, 255, 0.15)";
+
+    // Scales
+    options.scales.x.grid.color = isLight ? "rgba(15, 23, 42, 0.06)" : "rgba(255, 255, 255, 0.04)";
+    options.scales.x.ticks.color = isLight ? "#475569" : "#64748b";
+
+    options.scales.yTemp.grid.color = isLight ? "rgba(15, 23, 42, 0.06)" : "rgba(255, 255, 255, 0.05)";
+    options.scales.yTemp.ticks.color = isLight ? "#0f172a" : "#cbd5e1";
+    options.scales.yTemp.title.color = isLight ? "#475569" : "#94a3b8";
+
+    options.scales.yLight.ticks.color = isLight ? "#d97706" : "#fbbf24";
+    options.scales.yLight.title.color = isLight ? "#d97706" : "#fbbf24";
+
+    this.chart.update();
+  }
+
   setMode(mode) {
     this.currentMode = mode;
     this.updateDatasets();
@@ -171,47 +202,52 @@ class TelemetryCharts {
     const humiData = records.map((item) => (item.humi !== undefined ? item.humi : null));
     const lightData = records.map((item) => (item.light !== undefined ? item.light : null));
 
+    const isLight = this.currentTheme === "light";
+    const redstoneColor = isLight ? "#dc2626" : "#ff3355";
+    const cyanColor = isLight ? "#0284c7" : "#00f2fe";
+    const amberColor = isLight ? "#d97706" : "#fbbf24";
+
     const allDatasets = [
       {
         id: "temp",
         label: "TEMP (°C)",
         data: tempData,
-        borderColor: "#ff3355",
+        borderColor: redstoneColor,
         backgroundColor: this.gradients.temp,
         borderWidth: 2.5,
         tension: 0.35,
         fill: true,
         pointRadius: 3,
         pointHoverRadius: 6,
-        pointBackgroundColor: "#ff3355",
+        pointBackgroundColor: redstoneColor,
         yAxisID: "yTemp"
       },
       {
         id: "humi",
         label: "HUMIDITY (%)",
         data: humiData,
-        borderColor: "#00f2fe",
+        borderColor: cyanColor,
         backgroundColor: this.gradients.humi,
         borderWidth: 2.5,
         tension: 0.35,
         fill: true,
         pointRadius: 3,
         pointHoverRadius: 6,
-        pointBackgroundColor: "#00f2fe",
+        pointBackgroundColor: cyanColor,
         yAxisID: "yTemp"
       },
       {
         id: "light",
         label: "LIGHT (LX)",
         data: lightData,
-        borderColor: "#fbbf24",
+        borderColor: amberColor,
         backgroundColor: this.gradients.light,
         borderWidth: 2.5,
         tension: 0.35,
         fill: true,
         pointRadius: 3,
         pointHoverRadius: 6,
-        pointBackgroundColor: "#fbbf24",
+        pointBackgroundColor: amberColor,
         yAxisID: "yLight"
       }
     ];
