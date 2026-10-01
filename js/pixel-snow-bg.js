@@ -177,15 +177,15 @@
       this.lastFrameTime = performance.now();
       this.resizeTimeout = null;
 
-      // Theme-specific visual calibrations (Lightweight, subtle, delicate)
+      // Theme-specific visual calibrations (Micro-delicate, subtle, elegant)
       this.themeConfigs = {
         dark: {
           color: '#38bdf8',       // Cyber Cyan Neon
-          flakeSize: 0.005,       // Small elegant snowflake
-          minFlakeSize: 0.75,
-          pixelResolution: 380,   // Fine retro pixel resolution
-          brightness: 1.00,
-          density: 0.18,          // Clean airy distribution
+          flakeSize: 0.002,       // Micro-delicate snowflake size
+          minFlakeSize: 0.35,     // Small minimum diameter
+          pixelResolution: 520,   // High-density sharp micro-pixel grid
+          brightness: 1.05,
+          density: 0.20,          // Clean airy distribution
           speed: 0.85,            // Relaxed drift
           depthFade: 9.0,
           gamma: 0.65,
@@ -194,11 +194,11 @@
         },
         light: {
           color: '#0284c7',       // Translucent Soft Cyan Azure
-          flakeSize: 0.004,       // Small crystal snowflake
-          minFlakeSize: 0.70,
-          pixelResolution: 380,
-          brightness: 0.70,
-          density: 0.15,          // Minimal clean distribution
+          flakeSize: 0.0018,      // Tiny delicate micro-crystals
+          minFlakeSize: 0.30,     // Very small minimum diameter
+          pixelResolution: 520,   // High-density sharp micro-pixel grid
+          brightness: 0.75,
+          density: 0.16,          // Minimal clean distribution
           speed: 0.75,
           depthFade: 10.0,
           gamma: 0.75,
