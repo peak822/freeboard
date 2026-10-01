@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ESP32 Telemetry Dashboard | Minecraft Pixel Edition</title>
-  <meta name="description" content="Minecraft Pixel GUI themed Realtime IoT Sensor Telemetry Dashboard powered by ESP32, ESPHome, and Firebase Realtime Database.">
+  <title>ESP32 Realtime Telemetry Dashboard | Modern Cyber-Pixel</title>
+  <meta name="description" content="Modern Cyber-Pixel IoT Telemetry Dashboard powered by ESP32, ESPHome, and Firebase Realtime Database.">
 
-  <!-- Pixel & Minecraft Google Fonts -->
+  <!-- Combined Modern & Pixel Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
 
-  <!-- FontAwesome Icons -->
+  <!-- FontAwesome 6 Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <!-- Minecraft Pixel Stylesheet -->
+  <!-- Application Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
 
   <!-- Chart.js CDN -->
@@ -24,180 +24,195 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body class="mc-theme">
+<body class="cyber-mc-theme">
 
   <!-- Initial Loading Overlay -->
   <div class="loading-overlay" id="loadingOverlay">
-    <div class="mc-spinner"></div>
-    <h3 class="mc-font" style="color: #ffff55; margin-top: 16px; font-size: 14px;">GENERATING TERRAIN...</h3>
-    <p class="mc-subfont" style="color: #aaaaaa; margin-top: 8px; font-size: 13px;">Connecting to Firebase Realtime Stream</p>
+    <div class="cyber-spinner"></div>
+    <h3 class="pixel-tag" style="color: var(--neon-cyan); margin-top: 18px; font-size: 13px; letter-spacing: 1px;">INITIALIZING TELEMETRY HUD...</h3>
+    <p class="text-secondary" style="font-size: 12px; margin-top: 6px;">Connecting to Firebase Realtime Stream</p>
   </div>
 
   <div class="app-container">
     
-    <!-- Minecraft Header Section -->
-    <header class="dashboard-header mc-panel">
+    <!-- Modern Cyber Header -->
+    <header class="dashboard-header cyber-card">
       <div class="brand-section">
-        <div class="brand-icon mc-block-icon">
+        <div class="brand-icon-box">
           <i class="fas fa-cube"></i>
         </div>
         <div>
-          <h1 class="brand-title mc-font">ESP32 TELEMETRY HUB</h1>
-          <div class="brand-subtitle mc-subfont">
-            <span class="text-diamond"><i class="fas fa-bolt"></i> ESPHome REST</span>
-            <span class="text-stone">•</span>
-            <span class="text-redstone"><i class="fas fa-fire"></i> Firebase RTDB</span>
-            <span class="text-stone">•</span>
-            <span class="text-emerald"><i class="fab fa-github"></i> GitHub Pages</span>
+          <div class="brand-title-row">
+            <h1 class="brand-title">ESP32 TELEMETRY HUB</h1>
+            <span class="pixel-tag badge-cyan">v2.0 HUD</span>
+          </div>
+          <div class="brand-subtitle">
+            <span class="text-cyan"><i class="fas fa-bolt me-1"></i>ESPHome REST</span>
+            <span class="text-muted">•</span>
+            <span class="text-redstone"><i class="fas fa-fire me-1"></i>Firebase RTDB</span>
+            <span class="text-muted">•</span>
+            <span class="text-emerald"><i class="fab fa-github me-1"></i>GitHub Pages</span>
           </div>
         </div>
       </div>
 
       <div class="header-status-group">
-        <!-- Live Connection Status (Redstone Lamp Style) -->
-        <div class="status-pill mc-slot" id="statusContainer">
+        <!-- Live Connection Status (Redstone Lamp Pulse) -->
+        <div class="status-pill" id="statusContainer">
           <span class="status-dot dot-connecting" id="statusDot"></span>
-          <span id="statusText" class="mc-subfont">CONNECTING...</span>
+          <span id="statusText" class="mono-text">CONNECTING...</span>
         </div>
 
-        <!-- Action Buttons (Minecraft GUI Buttons) -->
-        <button class="btn mc-btn" id="btnOpenSettings" title="Configure Firebase Database URL">
-          <i class="fas fa-cog text-gold"></i>
+        <!-- Action Controls -->
+        <button class="btn btn-cyber" id="btnOpenSettings" title="Configure Firebase Database URL">
+          <i class="fas fa-sliders text-amber"></i>
           <span>SETTINGS</span>
         </button>
 
-        <button class="btn mc-btn mc-btn-green" id="btnOpenSim" title="Test dual upload without hardware">
-          <i class="fas fa-flask text-emerald"></i>
+        <button class="btn btn-primary-cyber" id="btnOpenSim" title="Test dual upload without hardware">
+          <i class="fas fa-flask"></i>
           <span>SIMULATOR</span>
         </button>
       </div>
     </header>
 
-    <!-- KPI Metric Cards Grid (Minecraft Item Frame / Slot Layout) -->
+    <!-- KPI Metric Cards Grid -->
     <section class="kpi-grid">
       <!-- Temperature Card -->
-      <div class="kpi-card mc-card card-temp">
+      <div class="kpi-card card-temp cyber-card">
         <div class="kpi-header">
-          <span class="kpi-title mc-font">TEMPERATURE</span>
-          <div class="kpi-icon-wrapper mc-icon-box">
-            <i class="fas fa-fire-flame-curved text-redstone"></i>
+          <div class="kpi-title-group">
+            <span class="pixel-tag text-redstone">SENSOR // 01</span>
+            <span class="kpi-title">TEMPERATURE</span>
+          </div>
+          <div class="kpi-icon-box icon-temp">
+            <i class="fas fa-fire-flame-curved"></i>
           </div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-value mc-number text-temp" id="valTemp">--.-</span>
-          <span class="kpi-unit mc-font">°C</span>
+          <span class="kpi-value text-redstone" id="valTemp">--.-</span>
+          <span class="kpi-unit">°C</span>
         </div>
         <div class="kpi-footer">
-          <span class="mc-subfont" id="minMaxTemp">MIN: --.- | MAX: --.-</span>
-          <span class="badge mc-badge badge-neutral" id="badgeTemp">WAITING</span>
+          <span class="mono-text" id="minMaxTemp">MIN: --.-°C | MAX: --.-°C</span>
+          <span class="pixel-tag badge-neutral" id="badgeTemp">WAITING</span>
         </div>
       </div>
 
       <!-- Humidity Card -->
-      <div class="kpi-card mc-card card-humi">
+      <div class="kpi-card card-humi cyber-card">
         <div class="kpi-header">
-          <span class="kpi-title mc-font">HUMIDITY</span>
-          <div class="kpi-icon-wrapper mc-icon-box">
-            <i class="fas fa-droplet text-lapis"></i>
+          <div class="kpi-title-group">
+            <span class="pixel-tag text-cyan">SENSOR // 02</span>
+            <span class="kpi-title">RELATIVE HUMIDITY</span>
+          </div>
+          <div class="kpi-icon-box icon-humi">
+            <i class="fas fa-droplet"></i>
           </div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-value mc-number text-humi" id="valHumi">--.-</span>
-          <span class="kpi-unit mc-font">%</span>
+          <span class="kpi-value text-cyan" id="valHumi">--.-</span>
+          <span class="kpi-unit">%</span>
         </div>
         <div class="kpi-footer">
-          <span class="mc-subfont" id="minMaxHumi">MIN: --.- | MAX: --.-</span>
-          <span class="badge mc-badge badge-neutral" id="badgeHumi">WAITING</span>
+          <span class="mono-text" id="minMaxHumi">MIN: --.-% | MAX: --.-%</span>
+          <span class="pixel-tag badge-neutral" id="badgeHumi">WAITING</span>
         </div>
       </div>
 
       <!-- Light Intensity Card -->
-      <div class="kpi-card mc-card card-light">
+      <div class="kpi-card card-light cyber-card">
         <div class="kpi-header">
-          <span class="kpi-title mc-font">AMBIENT LIGHT</span>
-          <div class="kpi-icon-wrapper mc-icon-box">
-            <i class="fas fa-sun text-gold"></i>
+          <div class="kpi-title-group">
+            <span class="pixel-tag text-amber">SENSOR // 03</span>
+            <span class="kpi-title">AMBIENT LIGHT</span>
+          </div>
+          <div class="kpi-icon-box icon-light">
+            <i class="fas fa-sun"></i>
           </div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-value mc-number text-light" id="valLight">---</span>
-          <span class="kpi-unit mc-font">LX</span>
+          <span class="kpi-value text-amber" id="valLight">---</span>
+          <span class="kpi-unit">lx</span>
         </div>
         <div class="kpi-footer">
-          <span class="mc-subfont" id="minMaxLight">MIN: --- | MAX: ---</span>
-          <span class="badge mc-badge badge-neutral" id="badgeLight">WAITING</span>
+          <span class="mono-text" id="minMaxLight">MIN: --- lx | MAX: --- lx</span>
+          <span class="pixel-tag badge-neutral" id="badgeLight">WAITING</span>
         </div>
       </div>
 
-      <!-- Device State & Health Card -->
-      <div class="kpi-card mc-card card-system">
+      <!-- Device State Card -->
+      <div class="kpi-card card-system cyber-card">
         <div class="kpi-header">
-          <span class="kpi-title mc-font">DEVICE STATE</span>
-          <div class="kpi-icon-wrapper mc-icon-box">
-            <i class="fas fa-clock text-emerald"></i>
+          <div class="kpi-title-group">
+            <span class="pixel-tag text-emerald">SYSTEM // HEALTH</span>
+            <span class="kpi-title">DEVICE STATE</span>
+          </div>
+          <div class="kpi-icon-box icon-system">
+            <i class="fas fa-microchip"></i>
           </div>
         </div>
         <div class="kpi-body">
-          <span class="kpi-value mc-number" style="font-size: 24px;" id="lastSeenTime">--:--:--</span>
+          <span class="kpi-value mono-text" style="font-size: 30px;" id="lastSeenTime">--:--:--</span>
         </div>
         <div class="kpi-footer">
-          <span class="mc-subfont"><span id="relativeTime">Awaiting sync</span></span>
-          <span class="badge mc-badge badge-neutral" id="deviceStatusBadge">STANDBY</span>
+          <span class="mono-text"><i class="far fa-clock me-1"></i><span id="relativeTime">Awaiting sync</span></span>
+          <span class="pixel-tag badge-neutral" id="deviceStatusBadge">STANDBY</span>
         </div>
       </div>
     </section>
 
-    <!-- Historical Telemetry Chart (Minecraft Chalkboard / Map Style) -->
-    <section class="chart-section mc-panel">
+    <!-- Telemetry Timeline Chart -->
+    <section class="chart-section cyber-card">
       <div class="chart-header">
-        <div class="section-title mc-font">
-          <i class="fas fa-map text-gold me-2"></i>
-          <span>TELEMETRY TIMELINE (FIREBASE /HISTORY)</span>
+        <div class="section-title">
+          <i class="fas fa-chart-line text-cyan me-2"></i>
+          <span>REALTIME TELEMETRY TIMELINE (/HISTORY)</span>
         </div>
         <div class="chart-controls">
-          <button class="chart-filter-btn mc-btn-sm active" data-mode="combined">ALL</button>
-          <button class="chart-filter-btn mc-btn-sm" data-mode="temp">TEMP</button>
-          <button class="chart-filter-btn mc-btn-sm" data-mode="humi">HUMI</button>
-          <button class="chart-filter-btn mc-btn-sm" data-mode="light">LIGHT</button>
+          <button class="chart-filter-btn active" data-mode="combined">ALL SENSORS</button>
+          <button class="chart-filter-btn" data-mode="temp">TEMP</button>
+          <button class="chart-filter-btn" data-mode="humi">HUMI</button>
+          <button class="chart-filter-btn" data-mode="light">LIGHT</button>
         </div>
       </div>
-      <div class="chart-container mc-slot">
+      <div class="chart-container">
         <canvas id="telemetryChart"></canvas>
       </div>
     </section>
 
-    <!-- Telemetry Records Table (6 Columns Requirement in Minecraft Chest Style) -->
-    <section class="table-section mc-panel">
+    <!-- 6-Column Telemetry Stream Table -->
+    <section class="table-section cyber-card">
       <div class="table-header">
-        <div class="section-title mc-font">
-          <i class="fas fa-box-archive text-gold me-2"></i>
+        <div class="section-title">
+          <i class="fas fa-table-list text-cyan me-2"></i>
           <span>HISTORICAL SENSOR STREAM</span>
-          <span class="badge mc-badge badge-info ms-2" id="recordCount">0 RECS</span>
+          <span class="pixel-tag badge-cyan ms-2" id="recordCount">0 RECS</span>
         </div>
         <div>
-          <button class="btn mc-btn mc-btn-sm" id="btnExportCsv">
-            <i class="fas fa-download text-gold"></i>
+          <button class="btn btn-cyber" id="btnExportCsv">
+            <i class="fas fa-download text-amber me-1"></i>
             <span>EXPORT CSV</span>
           </button>
         </div>
       </div>
 
-      <div class="table-wrapper mc-slot">
-        <table class="telemetry-table mc-table">
+      <div class="table-wrapper">
+        <table class="telemetry-table">
           <thead>
             <tr>
-              <th class="mc-font"><i class="fas fa-hashtag me-1"></i>DEVICE ID</th>
-              <th class="mc-font"><i class="far fa-clock me-1"></i>TIMESTAMP (SNTP)</th>
-              <th class="mc-font"><i class="fas fa-temperature-half me-1"></i>TEMPERATURE</th>
-              <th class="mc-font"><i class="fas fa-water me-1"></i>HUMIDITY</th>
-              <th class="mc-font"><i class="fas fa-lightbulb me-1"></i>LIGHT</th>
-              <th class="mc-font"><i class="fas fa-shield-halved me-1"></i>STATUS</th>
+              <th><i class="fas fa-hashtag me-1 text-cyan"></i>DEVICE ID</th>
+              <th><i class="far fa-clock me-1 text-muted"></i>TIMESTAMP (SNTP)</th>
+              <th><i class="fas fa-temperature-half me-1 text-redstone"></i>TEMPERATURE</th>
+              <th><i class="fas fa-water me-1 text-cyan"></i>HUMIDITY</th>
+              <th><i class="fas fa-lightbulb me-1 text-amber"></i>LIGHT</th>
+              <th><i class="fas fa-shield-halved me-1 text-emerald"></i>STATUS</th>
             </tr>
           </thead>
           <tbody id="historyTableBody">
             <tr id="emptyState">
-              <td colspan="6" class="text-center py-6 mc-subfont" style="text-align: center; padding: 30px; color: #888;">
-                <i class="fas fa-satellite me-2"></i>Listening for incoming telemetry packets from Firebase Realtime Database...
+              <td colspan="6" class="text-center py-6 text-muted" style="text-align: center; padding: 32px;">
+                <i class="fas fa-satellite me-2 text-cyan"></i>Listening for incoming telemetry packets from Firebase Realtime Database...
               </td>
             </tr>
           </tbody>
@@ -207,89 +222,89 @@
 
   </div>
 
-  <!-- Settings Modal Dialog (Minecraft Crafting GUI Style) -->
+  <!-- Settings Modal Dialog -->
   <div class="modal-overlay" id="settingsModal">
-    <div class="modal-content mc-panel">
+    <div class="modal-content cyber-card">
       <div class="modal-header">
-        <h3 class="modal-title mc-font"><i class="fas fa-wrench me-2 text-gold"></i>FIREBASE CONFIG</h3>
-        <button class="mc-close-btn" id="btnCloseSettings">✕</button>
+        <h3 class="modal-title"><i class="fas fa-sliders me-2 text-cyan"></i>FIREBASE CONFIGURATION</h3>
+        <button class="btn-close-cyber" id="btnCloseSettings">✕</button>
       </div>
       <form id="formFirebaseSettings">
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label mc-font" for="inputDbUrl">DATABASE URL *</label>
-            <input type="url" id="inputDbUrl" class="form-input mc-input" placeholder="https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app" required>
-            <div class="form-help mc-subfont">Enter the Realtime Database URL from Firebase Console.</div>
+            <label class="form-label" for="inputDbUrl">REALTIME DATABASE URL *</label>
+            <input type="url" id="inputDbUrl" class="form-input" placeholder="https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app" required>
+            <div class="form-help">Enter the Realtime Database URL found in your Firebase Console.</div>
           </div>
 
           <div class="form-group">
-            <label class="form-label mc-font" for="inputApiKey">WEB API KEY (OPTIONAL)</label>
-            <input type="text" id="inputApiKey" class="form-input mc-input" placeholder="AIzaSy...">
+            <label class="form-label" for="inputApiKey">WEB API KEY (OPTIONAL)</label>
+            <input type="text" id="inputApiKey" class="form-input" placeholder="AIzaSy...">
           </div>
 
           <div class="form-group">
-            <label class="form-label mc-font" for="inputProjectId">PROJECT ID (OPTIONAL)</label>
-            <input type="text" id="inputProjectId" class="form-input mc-input" placeholder="iot-esp32-project">
+            <label class="form-label" for="inputProjectId">PROJECT ID (OPTIONAL)</label>
+            <input type="text" id="inputProjectId" class="form-input" placeholder="iot-esp32-project">
           </div>
 
           <div class="form-group">
-            <label class="form-label mc-font" for="inputAuthDomain">AUTH DOMAIN (OPTIONAL)</label>
-            <input type="text" id="inputAuthDomain" class="form-input mc-input" placeholder="iot-esp32-project.firebaseapp.com">
+            <label class="form-label" for="inputAuthDomain">AUTH DOMAIN (OPTIONAL)</label>
+            <input type="text" id="inputAuthDomain" class="form-input" placeholder="iot-esp32-project.firebaseapp.com">
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn mc-btn" id="btnResetSettings">RESET</button>
-          <button type="submit" class="btn mc-btn mc-btn-green">SAVE & CONNECT</button>
+          <button type="button" class="btn btn-cyber" id="btnResetSettings">RESET</button>
+          <button type="submit" class="btn btn-primary-cyber">SAVE & CONNECT</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- ESP32 REST Simulator Drawer (Minecraft Anvil / Dispenser GUI) -->
-  <aside class="drawer mc-panel" id="simulatorDrawer">
+  <!-- ESP32 REST Simulator Drawer -->
+  <aside class="drawer cyber-card" id="simulatorDrawer">
     <div class="drawer-header">
-      <h3 class="mc-font" style="font-size: 13px;">
-        <i class="fas fa-flask me-2 text-emerald"></i>ESP32 SIMULATOR
+      <h3 class="drawer-title">
+        <i class="fas fa-flask me-2 text-cyan"></i>ESP32 REST SIMULATOR
       </h3>
-      <button class="mc-close-btn" id="btnCloseSim">✕</button>
+      <button class="btn-close-cyber" id="btnCloseSim">✕</button>
     </div>
     <div class="drawer-body">
-      <p class="mc-subfont" style="font-size: 11px; margin-bottom: 18px; color: #bbb;">
+      <p class="text-secondary" style="font-size: 12px; margin-bottom: 18px; line-height: 1.6;">
         Emulates ESPHome Level 5 dual REST pipeline: PUT to <code>/latest.json</code> and POST to <code>/history.json</code> directly from the browser.
       </p>
 
       <div class="form-group">
-        <label class="form-label mc-font">SIMULATED TEMP (°C)</label>
-        <input type="number" step="0.1" id="simTemp" class="form-input mc-input" value="28.5">
+        <label class="form-label">SIMULATED TEMP (°C)</label>
+        <input type="number" step="0.1" id="simTemp" class="form-input" value="28.5">
       </div>
 
       <div class="form-group">
-        <label class="form-label mc-font">SIMULATED HUMIDITY (%)</label>
-        <input type="number" step="0.1" id="simHumi" class="form-input mc-input" value="64.2">
+        <label class="form-label">SIMULATED HUMIDITY (%)</label>
+        <input type="number" step="0.1" id="simHumi" class="form-input" value="64.2">
       </div>
 
       <div class="form-group">
-        <label class="form-label mc-font">SIMULATED LIGHT (LX)</label>
-        <input type="number" step="1" id="simLight" class="form-input mc-input" value="520">
+        <label class="form-label">SIMULATED LIGHT (LX)</label>
+        <input type="number" step="1" id="simLight" class="form-input" value="520">
       </div>
 
       <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-        <button type="button" class="btn mc-btn" id="btnRandomMock" style="flex: 1;">
-          <i class="fas fa-dice me-1"></i> RANDOM
+        <button type="button" class="btn btn-cyber" id="btnRandomMock" style="flex: 1;">
+          <i class="fas fa-dice me-1 text-amber"></i> RANDOM
         </button>
-        <button type="button" class="btn mc-btn mc-btn-green" id="btnSendMock" style="flex: 2;">
-          <i class="fas fa-paper-plane me-1"></i> SEND L5
+        <button type="button" class="btn btn-primary-cyber" id="btnSendMock" style="flex: 2;">
+          <i class="fas fa-paper-plane me-1"></i> SEND L5 PAYLOAD
         </button>
       </div>
 
-      <label class="form-label mc-font">DISPENSER LOG</label>
-      <div class="sim-console mc-slot" id="simLog">
-        <div>[SYSTEM] Dispenser ready. Waiting for trigger...</div>
+      <label class="form-label">REST CONSOLE LOG</label>
+      <div class="sim-console" id="simLog">
+        <div>[SYSTEM] Simulator online. Ready to dispatch REST packets.</div>
       </div>
     </div>
   </aside>
 
-  <!-- Toast Notification Container -->
+  <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- Application Logic Scripts -->
