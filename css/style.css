@@ -1,115 +1,102 @@
 /* ==============================================================================
-   Minecraft Pixel GUI Design System for ESP32 IoT Realtime Dashboard
-   Authentic 3D Bevels, Pixel Typography, Inventory Slots & Crafting GUI Aesthetic
+   Modern Cyber-Pixel Design System for ESP32 IoT Realtime Dashboard
+   Aesthetic: Ultra-Sharp Dark Glassmorphism, Neon Telemetry Accents, Pixel HUD Badges
    ============================================================================== */
 
 :root {
-  /* Minecraft Color Palette */
-  --mc-bg-bedrock: #121212;
-  --mc-bg-stone: #242424;
-  --mc-panel-bg: #2d2d2d;
-  --mc-slot-bg: #141414;
-  --mc-btn-bg: #737373;
-  --mc-btn-hover: #8b8b8b;
-  --mc-btn-active: #555555;
+  /* Surface & Base Colors */
+  --bg-space: #070b14;
+  --bg-card: rgba(13, 20, 36, 0.85);
+  --bg-card-hover: rgba(20, 30, 52, 0.95);
+  --bg-surface: #0e1526;
+  --bg-slot: rgba(6, 10, 19, 0.9);
 
-  /* Minecraft Accent Colors */
-  --mc-text-white: #ffffff;
-  --mc-text-yellow: #ffff55;
-  --mc-text-gray: #aaaaaa;
-  --mc-text-dark: #3f3f3f;
-  
-  --mc-redstone: #ff3333;
-  --mc-emerald: #55ff55;
-  --mc-lapis: #38bdf8;
-  --mc-gold: #ffaa00;
-  --mc-diamond: #55ffff;
-  --mc-netherite: #8b5cf6;
+  /* Neon Accents */
+  --neon-cyan: #00f2fe;
+  --neon-blue: #38bdf8;
+  --neon-redstone: #ff3355;
+  --neon-emerald: #10b981;
+  --neon-amber: #fbbf24;
+  --neon-purple: #a855f7;
+
+  /* Text Colors */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
 
   /* Typography */
-  --font-pixel-title: 'Press Start 2P', monospace;
-  --font-pixel-body: 'Silkscreen', monospace;
-  --font-pixel-num: 'VT323', monospace;
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-pixel: 'Silkscreen', monospace;
+  --font-pixel-heading: 'Press Start 2P', monospace;
 
-  /* 3D Pixel Bevel Shadows */
-  --shadow-pixel-inset: inset 3px 3px 0px #0a0a0a, inset -3px -3px 0px #3f3f3f;
-  --shadow-pixel-panel: inset 3px 3px 0px #4d4d4d, inset -3px -3px 0px #181818, 0 8px 0px #0c0c0c;
-  --shadow-pixel-btn: inset 2px 2px 0px #ffffff, inset -2px -2px 0px #3a3a3a;
-  --shadow-pixel-btn-active: inset 2px 2px 0px #222222, inset -2px -2px 0px #888888;
+  /* Borders & Shadows */
+  --border-glass: 1px solid rgba(255, 255, 255, 0.1);
+  --border-glass-bright: 1px solid rgba(255, 255, 255, 0.2);
+  --border-pixel-cyan: 1px solid rgba(0, 242, 254, 0.5);
+  --shadow-card: 0 12px 30px -8px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --shadow-glow-cyan: 0 0 20px rgba(0, 242, 254, 0.2);
+  --shadow-glow-redstone: 0 0 20px rgba(255, 51, 85, 0.2);
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  image-rendering: pixelated;
 }
 
-body.mc-theme {
-  font-family: var(--font-pixel-body);
-  background-color: var(--mc-bg-bedrock);
+body.cyber-mc-theme {
+  font-family: var(--font-main);
+  background-color: var(--bg-space);
   background-image: 
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.85) 100%),
-    repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.25) 3px, rgba(0, 0, 0, 0.25) 6px),
-    linear-gradient(45deg, #181818 25%, transparent 25%),
-    linear-gradient(-45deg, #181818 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #181818 75%),
-    linear-gradient(-45deg, transparent 75%, #181818 75%);
-  background-size: 100% 100%, 100% 100%, 16px 16px, 16px 16px, 16px 16px, 16px 16px;
-  background-position: center, center, 0 0, 0 8px, 8px -8px, -8px 0px;
-  color: var(--mc-text-white);
+    radial-gradient(circle at 15% 15%, rgba(0, 242, 254, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.05) 0%, transparent 45%),
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px, 24px 24px;
+  color: var(--text-primary);
   min-height: 100vh;
   line-height: 1.5;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Typography Classes */
-.mc-font {
-  font-family: var(--font-pixel-title);
-  text-shadow: 2px 2px 0px #000;
-  letter-spacing: -0.5px;
+.mono-text { font-family: var(--font-mono); }
+.pixel-tag {
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
+.pixel-heading { font-family: var(--font-pixel-heading); }
 
-.mc-subfont {
-  font-family: var(--font-pixel-body);
-  text-shadow: 1px 1px 0px #000;
-}
-
-.mc-number {
-  font-family: var(--font-pixel-num);
-  text-shadow: 2px 2px 0px #000;
-}
-
-/* Color Utilities */
-.text-redstone { color: var(--mc-redstone); }
-.text-emerald { color: var(--mc-emerald); }
-.text-lapis { color: var(--mc-lapis); }
-.text-gold { color: var(--mc-gold); }
-.text-diamond { color: var(--mc-diamond); }
-.text-stone { color: #888888; }
+/* Color Helpers */
+.text-cyan { color: var(--neon-cyan); }
+.text-redstone { color: var(--neon-redstone); }
+.text-emerald { color: var(--neon-emerald); }
+.text-amber { color: var(--neon-amber); }
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
 
 /* -------------------------------------------------------------
-   Layout & Panels
+   Layout & Cyber Cards
    ------------------------------------------------------------- */
 .app-container {
-  max-width: 1400px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 24px;
 }
 
-.mc-panel {
-  background: var(--mc-panel-bg);
-  border: 4px solid #111111;
-  box-shadow: var(--shadow-pixel-panel);
-  border-radius: 0px;
+.cyber-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: var(--border-glass);
+  box-shadow: var(--shadow-card);
+  border-radius: 12px;
   position: relative;
-}
-
-.mc-slot {
-  background: var(--mc-slot-bg);
-  border: 3px solid;
-  border-color: #0c0c0c #3a3a3a #3a3a3a #0c0c0c;
-  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.8);
+  overflow: hidden;
 }
 
 /* -------------------------------------------------------------
@@ -119,8 +106,9 @@ body.mc-theme {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
-  margin-bottom: 20px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  border-top: 2px solid var(--neon-cyan);
 }
 
 .brand-section {
@@ -129,29 +117,40 @@ body.mc-theme {
   gap: 16px;
 }
 
-.mc-block-icon {
-  width: 48px;
-  height: 48px;
-  background: #3b8526;
-  border: 3px solid;
-  border-color: #5bb33d #1f4f13 #1f4f13 #5bb33d;
-  box-shadow: inset 2px 2px 0px #70db4a, inset -2px -2px 0px #14350c;
+.brand-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+  border: 1px solid var(--neon-cyan);
+  box-shadow: var(--shadow-glow-cyan);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  color: #fff;
-  text-shadow: 2px 2px 0px #000;
+  color: var(--neon-cyan);
 }
 
-.brand-title {
-  font-size: 16px;
-  color: var(--mc-text-yellow);
+.brand-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 4px;
 }
 
+.brand-title {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(90deg, #ffffff 0%, #cbd5e1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .brand-subtitle {
-  font-size: 11px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -164,109 +163,149 @@ body.mc-theme {
   flex-wrap: wrap;
 }
 
-/* Redstone Status Pill */
+/* Live Status Pill */
 .status-pill {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
-  font-size: 11px;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-slot);
+  border: var(--border-glass);
+  border-radius: 30px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .status-dot {
-  width: 12px;
-  height: 12px;
-  border: 2px solid #000;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
   display: inline-block;
 }
 
 .dot-online {
-  background: var(--mc-emerald);
-  box-shadow: 0 0 8px var(--mc-emerald);
-  animation: mc-redstone-pulse 1.8s infinite;
+  background: var(--neon-emerald);
+  box-shadow: 0 0 10px var(--neon-emerald);
+  animation: cyber-pulse-green 1.8s infinite;
 }
 
 .dot-connecting {
-  background: var(--mc-gold);
-  box-shadow: 0 0 8px var(--mc-gold);
-  animation: mc-redstone-pulse 1.2s infinite;
+  background: var(--neon-amber);
+  box-shadow: 0 0 10px var(--neon-amber);
+  animation: cyber-pulse-amber 1.4s infinite;
 }
 
 .dot-error {
-  background: var(--mc-redstone);
-  box-shadow: 0 0 8px var(--mc-redstone);
+  background: var(--neon-redstone);
+  box-shadow: 0 0 10px var(--neon-redstone);
 }
 
-@keyframes mc-redstone-pulse {
-  0% { opacity: 0.8; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.15); }
-  100% { opacity: 0.8; transform: scale(1); }
+@keyframes cyber-pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+@keyframes cyber-pulse-amber {
+  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+  70% { box-shadow: 0 0 0 8px rgba(251, 191, 36, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
 }
 
 /* -------------------------------------------------------------
-   Minecraft 3D Buttons
+   Modern 3D Cyber Buttons
    ------------------------------------------------------------- */
-.mc-btn {
+.btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  font-family: var(--font-pixel-title);
+  padding: 9px 18px;
+  font-family: var(--font-pixel);
   font-size: 11px;
-  text-transform: uppercase;
-  color: var(--mc-text-white);
-  background: var(--mc-btn-bg);
-  border: 3px solid;
-  border-color: #dbdbdb #373737 #373737 #dbdbdb;
-  box-shadow: var(--shadow-pixel-btn);
+  font-weight: 700;
+  border-radius: 8px;
   cursor: pointer;
-  text-shadow: 2px 2px 0px #000;
-  transition: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
 }
 
-.mc-btn:hover {
-  background: var(--mc-btn-hover);
-  color: var(--mc-text-yellow);
-  border-color: #ffffff #2b2b2b #2b2b2b #ffffff;
+.btn-cyber {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 3px 0 #050811, 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-.mc-btn:active {
-  background: var(--mc-btn-active);
-  border-color: #2b2b2b #ffffff #ffffff #2b2b2b;
-  box-shadow: var(--shadow-pixel-btn-active);
-  transform: translate(2px, 2px);
+.btn-cyber:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #050811, 0 6px 14px rgba(0, 0, 0, 0.5);
 }
 
-.mc-btn-green {
-  background: #2e7d32;
-  border-color: #66bb6a #1b5e20 #1b5e20 #66bb6a;
-  box-shadow: inset 2px 2px 0px #a5d6a7, inset -2px -2px 0px #0d3810;
+.btn-cyber:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #050811;
 }
 
-.mc-btn-green:hover {
-  background: #388e3c;
-  color: #ffffff;
+.btn-primary-cyber {
+  background: linear-gradient(135deg, #00f2fe 0%, #38bdf8 100%);
+  color: #041221;
+  border: 1px solid #7dd3fc;
+  font-weight: 800;
+  box-shadow: 0 3px 0 #0284c7, var(--shadow-glow-cyan);
 }
 
-.mc-btn-sm {
-  padding: 6px 12px;
-  font-size: 10px;
+.btn-primary-cyber:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #0284c7, 0 0 25px rgba(0, 242, 254, 0.5);
+}
+
+.btn-primary-cyber:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #0284c7;
 }
 
 /* -------------------------------------------------------------
-   KPI Cards (Minecraft Inventory Slot / Item Frame)
+   KPI Metric Cards
    ------------------------------------------------------------- */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
-.mc-card {
-  padding: 18px;
-  background: #2a2a2a;
+.kpi-card {
+  padding: 22px;
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Glowing Neon Top Borders */
+.card-temp::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--neon-redstone), #fb7185);
+  box-shadow: 0 0 12px var(--neon-redstone);
+}
+.card-humi::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--neon-cyan), #38bdf8);
+  box-shadow: 0 0 12px var(--neon-cyan);
+}
+.card-light::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--neon-amber), #f59e0b);
+  box-shadow: 0 0 12px var(--neon-amber);
+}
+.card-system::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--neon-emerald), #34d399);
+  box-shadow: 0 0 12px var(--neon-emerald);
 }
 
 .kpi-header {
@@ -276,168 +315,153 @@ body.mc-theme {
   margin-bottom: 12px;
 }
 
-.kpi-title {
-  font-size: 11px;
-  color: var(--mc-text-gray);
+.kpi-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.mc-icon-box {
-  width: 36px;
-  height: 36px;
-  background: #141414;
-  border: 2px solid;
-  border-color: #0c0c0c #3a3a3a #3a3a3a #0c0c0c;
+.kpi-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.kpi-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  background: var(--bg-slot);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
+.icon-temp { color: var(--neon-redstone); border-color: rgba(255, 51, 85, 0.3); }
+.icon-humi { color: var(--neon-cyan); border-color: rgba(0, 242, 254, 0.3); }
+.icon-light { color: var(--neon-amber); border-color: rgba(251, 191, 36, 0.3); }
+.icon-system { color: var(--neon-emerald); border-color: rgba(16, 185, 129, 0.3); }
 
 .kpi-body {
   display: flex;
   align-items: baseline;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 12px;
-  padding: 6px 10px;
-  background: #161616;
-  border: 2px solid;
-  border-color: #0a0a0a #333 #333 #0a0a0a;
 }
 
 .kpi-value {
   font-size: 42px;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
+  letter-spacing: -1px;
 }
 
 .kpi-unit {
-  font-size: 14px;
-  color: var(--mc-text-gray);
+  font-size: 18px;
+  color: var(--text-muted);
+  font-weight: 700;
 }
 
 .kpi-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
-  color: var(--mc-text-gray);
-  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 12px;
 }
 
-/* Flash Animation on update */
+/* Update Flash Animation */
 .flash-update {
-  animation: mc-flash 0.4s ease-out;
+  animation: cyber-flash 0.5s ease-out;
 }
 
-@keyframes mc-flash {
-  0% { background: #444444; border-color: var(--mc-text-yellow); }
-  100% { background: #2a2a2a; border-color: #111111; }
+@keyframes cyber-flash {
+  0% { box-shadow: 0 0 25px rgba(0, 242, 254, 0.4); border-color: var(--neon-cyan); }
+  100% { box-shadow: var(--shadow-card); border-color: rgba(255, 255, 255, 0.1); }
 }
 
 /* -------------------------------------------------------------
-   Minecraft Badges
+   Badges & Tags
    ------------------------------------------------------------- */
-.mc-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
-  font-family: var(--font-pixel-body);
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  border: 2px solid;
-}
-
-.badge-success {
-  background: #14350c;
-  color: var(--mc-emerald);
-  border-color: #3b8526;
-}
-
-.badge-warning {
-  background: #3e2600;
-  color: var(--mc-gold);
-  border-color: #b26a00;
-}
-
-.badge-danger {
-  background: #3e0c0c;
-  color: var(--mc-redstone);
-  border-color: #b21b1b;
-}
-
-.badge-info {
-  background: #092a3a;
-  color: var(--mc-lapis);
-  border-color: #1a6e9a;
-}
-
-.badge-neutral {
-  background: #1e1e1e;
-  color: var(--mc-text-gray);
-  border-color: #444444;
-}
+.badge-cyan { background: rgba(0, 242, 254, 0.12); color: var(--neon-cyan); border: 1px solid rgba(0, 242, 254, 0.3); padding: 3px 8px; border-radius: 4px; }
+.badge-success { background: rgba(16, 185, 129, 0.12); color: var(--neon-emerald); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 4px; }
+.badge-danger { background: rgba(255, 51, 85, 0.12); color: var(--neon-redstone); border: 1px solid rgba(255, 51, 85, 0.3); padding: 3px 8px; border-radius: 4px; }
+.badge-warning { background: rgba(251, 191, 36, 0.12); color: var(--neon-amber); border: 1px solid rgba(251, 191, 36, 0.3); padding: 3px 8px; border-radius: 4px; }
+.badge-neutral { background: rgba(148, 163, 184, 0.12); color: var(--text-secondary); border: 1px solid rgba(148, 163, 184, 0.2); padding: 3px 8px; border-radius: 4px; }
 
 /* -------------------------------------------------------------
-   Chart Section (Minecraft Map Style)
+   Chart Section
    ------------------------------------------------------------- */
 .chart-section {
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
 }
 
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .section-title {
-  font-size: 12px;
-  color: var(--mc-text-white);
+  font-size: 15px;
+  font-weight: 700;
   display: flex;
   align-items: center;
+  letter-spacing: -0.3px;
 }
 
 .chart-controls {
   display: flex;
   gap: 6px;
+  background: var(--bg-slot);
+  padding: 4px;
+  border-radius: 8px;
+  border: var(--border-glass);
 }
 
 .chart-filter-btn {
-  padding: 6px 12px;
-  font-family: var(--font-pixel-title);
+  padding: 6px 14px;
+  font-family: var(--font-pixel);
   font-size: 10px;
-  background: var(--mc-btn-bg);
-  color: #fff;
-  border: 2px solid;
-  border-color: #dbdbdb #373737 #373737 #dbdbdb;
+  font-weight: 700;
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chart-filter-btn:hover {
+  color: var(--text-primary);
 }
 
 .chart-filter-btn.active {
-  background: var(--mc-gold);
-  color: #000;
-  border-color: #ffffff #805500 #805500 #ffffff;
-  text-shadow: none;
+  background: var(--neon-cyan);
+  color: #041221;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
 }
 
 .chart-container {
   height: 340px;
   width: 100%;
-  padding: 10px;
   position: relative;
 }
 
 /* -------------------------------------------------------------
-   Table Section (Minecraft Chest Slot Grid)
+   Table Section (6 Columns)
    ------------------------------------------------------------- */
 .table-section {
-  padding: 20px;
+  padding: 24px;
 }
 
 .table-header {
@@ -451,59 +475,58 @@ body.mc-theme {
 
 .table-wrapper {
   overflow-x: auto;
+  border: var(--border-glass);
+  border-radius: 8px;
   max-height: 420px;
+  background: var(--bg-slot);
 }
 
-.mc-table {
+.telemetry-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 12px;
+  font-size: 13px;
 }
 
-.mc-table th {
-  background: #1e1e1e;
-  padding: 12px 14px;
-  color: var(--mc-text-yellow);
+.telemetry-table th {
+  background: rgba(14, 21, 38, 0.98);
+  padding: 14px 18px;
+  color: var(--text-secondary);
+  font-family: var(--font-pixel);
   font-size: 10px;
-  border-bottom: 3px solid #0a0a0a;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: sticky;
   top: 0;
   z-index: 2;
-  text-shadow: 1px 1px 0px #000;
 }
 
-.mc-table td {
-  padding: 12px 14px;
-  border-bottom: 2px solid #1a1a1a;
-  background: #141414;
-  font-family: var(--font-pixel-num);
-  font-size: 16px;
+.telemetry-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  font-family: var(--font-mono);
+  font-size: 13px;
 }
 
-.mc-table tr:nth-child(even) td {
-  background: #181818;
-}
-
-.mc-table tr:hover td {
-  background: #282828;
+.telemetry-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* -------------------------------------------------------------
-   Modal Dialogs & Drawers (Minecraft Crafting GUI)
+   Modal Dialogs & Drawers
    ------------------------------------------------------------- */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(4px);
+  background: rgba(4, 7, 14, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
 }
 
 .modal-overlay.modal-show {
@@ -514,78 +537,81 @@ body.mc-theme {
 .modal-content {
   width: 90%;
   max-width: 540px;
+  border-top: 2px solid var(--neon-cyan);
 }
 
 .modal-header {
-  padding: 16px 20px;
+  padding: 18px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 3px solid #141414;
+  border-bottom: var(--border-glass);
 }
 
 .modal-title {
-  font-size: 12px;
-  color: var(--mc-text-yellow);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: var(--font-pixel);
+  color: var(--neon-cyan);
 }
 
-.mc-close-btn {
-  background: var(--mc-btn-bg);
-  border: 2px solid;
-  border-color: #dbdbdb #373737 #373737 #dbdbdb;
-  color: #fff;
-  font-family: var(--font-pixel-title);
-  font-size: 12px;
-  padding: 4px 8px;
+.btn-close-cyber {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
   cursor: pointer;
+  padding: 4px 8px;
 }
 
-.mc-close-btn:hover {
-  background: var(--mc-redstone);
-  color: #fff;
+.btn-close-cyber:hover {
+  color: var(--neon-redstone);
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 24px;
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .form-label {
   display: block;
+  font-family: var(--font-pixel);
   font-size: 10px;
-  color: var(--mc-text-gray);
+  color: var(--text-secondary);
   margin-bottom: 6px;
+  letter-spacing: 0.5px;
 }
 
-.mc-input {
+.form-input {
   width: 100%;
-  padding: 10px 12px;
-  background: #0e0e0e;
-  border: 3px solid;
-  border-color: #000 #3a3a3a #3a3a3a #000;
-  color: var(--mc-text-white);
-  font-family: var(--font-pixel-body);
-  font-size: 12px;
+  padding: 10px 14px;
+  background: var(--bg-slot);
+  border: var(--border-glass);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  transition: all 0.2s ease;
 }
 
-.mc-input:focus {
+.form-input:focus {
   outline: none;
-  border-color: var(--mc-gold);
-  background: #161616;
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
 }
 
 .form-help {
-  font-size: 10px;
-  color: #777;
+  font-size: 11px;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
 .modal-footer {
-  padding: 14px 20px;
-  border-top: 3px solid #141414;
+  padding: 16px 24px;
+  border-top: var(--border-glass);
   display: flex;
   justify-content: flex-end;
   gap: 10px;
@@ -599,9 +625,12 @@ body.mc-theme {
   width: 420px;
   max-width: 90vw;
   height: 100vh;
+  border-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 2px solid var(--neon-cyan);
   z-index: 100;
   transform: translateX(100%);
-  transition: transform 0.25s ease;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
 }
@@ -611,74 +640,80 @@ body.mc-theme {
 }
 
 .drawer-header {
-  padding: 16px 20px;
-  border-bottom: 3px solid #141414;
+  padding: 18px 24px;
+  border-bottom: var(--border-glass);
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
+.drawer-title {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  color: var(--neon-cyan);
+}
+
 .drawer-body {
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   flex: 1;
 }
 
 .sim-console {
+  background: #04070d;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
   padding: 12px;
-  font-family: var(--font-pixel-num);
-  font-size: 15px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   height: 180px;
   overflow-y: auto;
-  color: var(--mc-emerald);
-  line-height: 1.4;
+  color: var(--neon-emerald);
+  line-height: 1.5;
 }
 
-/* -------------------------------------------------------------
-   Toast Notifications (Minecraft Achievement Box)
-   ------------------------------------------------------------- */
+/* Toast Container */
 .toast-container {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 24px;
+  right: 24px;
   z-index: 999;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .toast {
-  background: #242424;
-  border: 3px solid #111;
-  box-shadow: var(--shadow-pixel-panel);
-  padding: 10px 16px;
-  font-family: var(--font-pixel-body);
-  font-size: 11px;
+  background: rgba(14, 21, 38, 0.95);
+  border: var(--border-glass);
+  backdrop-filter: blur(12px);
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
   display: flex;
   align-items: center;
-  color: var(--mc-text-white);
-  animation: mc-slide-in 0.2s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+  animation: cyber-slide-in 0.25s ease;
   transition: opacity 0.3s ease;
 }
 
 .toast-fade { opacity: 0; }
-.toast-success { border-left: 6px solid var(--mc-emerald); color: var(--mc-emerald); }
-.toast-error { border-left: 6px solid var(--mc-redstone); color: var(--mc-redstone); }
-.toast-warning { border-left: 6px solid var(--mc-gold); color: var(--mc-gold); }
-.toast-info { border-left: 6px solid var(--mc-diamond); color: var(--mc-diamond); }
+.toast-success { border-left: 4px solid var(--neon-emerald); }
+.toast-error { border-left: 4px solid var(--neon-redstone); }
+.toast-warning { border-left: 4px solid var(--neon-amber); }
+.toast-info { border-left: 4px solid var(--neon-cyan); }
 
-@keyframes mc-slide-in {
-  from { transform: translateX(50px); opacity: 0; }
+@keyframes cyber-slide-in {
+  from { transform: translateX(40px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* -------------------------------------------------------------
-   Loading Screen (Terrain Generation)
-   ------------------------------------------------------------- */
+/* Loading Screen */
 .loading-overlay {
   position: fixed;
   inset: 0;
-  background: #111111;
+  background: var(--bg-space);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -693,42 +728,29 @@ body.mc-theme {
   pointer-events: none;
 }
 
-.mc-spinner {
-  width: 40px;
-  height: 40px;
-  background: #55ff55;
-  border: 4px solid #1f4f13;
-  animation: mc-spin 1s infinite steps(4);
+.cyber-spinner {
+  width: 44px;
+  height: 44px;
+  border: 3px solid rgba(0, 242, 254, 0.15);
+  border-top-color: var(--neon-cyan);
+  border-radius: 50%;
+  animation: cyber-spin 0.7s linear infinite;
 }
 
-@keyframes mc-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes cyber-spin {
+  to { transform: rotate(360deg); }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #0e0e0e;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #444444;
-  border: 2px solid #0e0e0e;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #666666;
-}
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-space); }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .app-container { padding: 10px; }
-  .dashboard-header { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .app-container { padding: 12px; }
+  .dashboard-header { flex-direction: column; align-items: flex-start; gap: 16px; }
   .header-status-group { width: 100%; justify-content: space-between; }
   .kpi-grid { grid-template-columns: 1fr; }
   .drawer { width: 100vw; }
