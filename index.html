@@ -23,8 +23,14 @@
   <!-- Firebase App & Realtime Database SDK (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+  <!-- Three.js Library for WebGL Pixel Snow Background -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body class="cyber-mc-theme">
+
+  <!-- WebGL Cyber Pixel Snow Background Layer -->
+  <div id="pixelSnowBg" class="pixel-snow-bg" aria-hidden="true"></div>
 
   <!-- Initial Loading Overlay -->
   <div class="loading-overlay" id="loadingOverlay">
@@ -535,6 +541,7 @@
   <!-- Application Logic Scripts -->
   <script src="js/firebase-config.js"></script>
   <script src="js/firebase-service.js"></script>
+  <script src="js/pixel-snow-bg.js"></script>
   <script src="js/charts.js"></script>
   <script src="js/dashboard.js"></script>
 </body>
