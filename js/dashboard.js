@@ -1,12 +1,12 @@
 /**
- * Dashboard UI Controller for ESP32 IoT Firebase Platform - Minecraft Pixel Edition
+ * Dashboard UI Controller for ESP32 IoT Firebase Platform - Modern Cyber-Pixel Edition
  * 
- * Coordinates Minecraft inventory telemetry cards, live status evaluation,
- * 6-column history table, 8-bit web audio feedback, settings modal, simulator drawer, and CSV export.
+ * Coordinates telemetry cards, live status evaluation, 6-column history table,
+ * 8-bit web audio feedback, settings modal, simulator drawer, and CSV export.
  */
 
 // -------------------------------------------------------------
-// 8-Bit Web Audio Synthesizer (Minecraft GUI Sound Effects)
+// 8-Bit Web Audio Synthesizer
 // -------------------------------------------------------------
 let audioCtx = null;
 
@@ -25,36 +25,35 @@ function playPixelSound(type = "click") {
     gain.connect(audioCtx.destination);
 
     if (type === "click") {
-      // Crisp Minecraft menu click
+      // Crisp subtle cyber click
       osc.type = "square";
-      osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.04);
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+      osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.03);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.03);
       osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.04);
+      osc.stop(audioCtx.currentTime + 0.03);
     } else if (type === "success") {
-      // Level-up / achievement jingle
+      // Achievement level-up chime
       osc.type = "triangle";
       osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
       osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.06); // E5
       osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.12); // G5
-      gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.25);
       osc.start(audioCtx.currentTime);
       osc.stop(audioCtx.currentTime + 0.25);
     } else if (type === "pop") {
-      // Item pickup pop
       osc.type = "sine";
-      osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.06);
-      gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.06);
+      osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(950, audioCtx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.05);
       osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.06);
+      osc.stop(audioCtx.currentTime + 0.05);
     }
   } catch (e) {
-    // Silent fallback if audio is blocked
+    // Graceful fallback if audio is not permitted
   }
 }
 
@@ -158,14 +157,14 @@ document.addEventListener("DOMContentLoaded", () => {
       sessionStats.tempMin = Math.min(sessionStats.tempMin, temp);
       sessionStats.tempMax = Math.max(sessionStats.tempMax, temp);
       elValTemp.textContent = temp.toFixed(1);
-      elMinMaxTemp.textContent = `MIN:${sessionStats.tempMin.toFixed(1)} MAX:${sessionStats.tempMax.toFixed(1)}`;
+      elMinMaxTemp.textContent = `MIN: ${sessionStats.tempMin.toFixed(1)}°C | MAX: ${sessionStats.tempMax.toFixed(1)}°C`;
       
       if (temp > 33.0) {
         elBadgeTemp.textContent = "HIGH TEMP";
-        elBadgeTemp.className = "badge mc-badge badge-danger";
+        elBadgeTemp.className = "pixel-tag badge-danger";
       } else {
-        elBadgeTemp.textContent = "NORMAL";
-        elBadgeTemp.className = "badge mc-badge badge-success";
+        elBadgeTemp.textContent = "OPTIMAL";
+        elBadgeTemp.className = "pixel-tag badge-success";
       }
     }
 
@@ -173,17 +172,17 @@ document.addEventListener("DOMContentLoaded", () => {
       sessionStats.humiMin = Math.min(sessionStats.humiMin, humi);
       sessionStats.humiMax = Math.max(sessionStats.humiMax, humi);
       elValHumi.textContent = humi.toFixed(1);
-      elMinMaxHumi.textContent = `MIN:${sessionStats.humiMin.toFixed(1)} MAX:${sessionStats.humiMax.toFixed(1)}`;
+      elMinMaxHumi.textContent = `MIN: ${sessionStats.humiMin.toFixed(1)}% | MAX: ${sessionStats.humiMax.toFixed(1)}%`;
 
       if (humi > 75.0) {
-        elBadgeHumi.textContent = "WET / HIGH";
-        elBadgeHumi.className = "badge mc-badge badge-info";
+        elBadgeHumi.textContent = "HIGH HUMI";
+        elBadgeHumi.className = "pixel-tag badge-cyan";
       } else if (humi < 55.0) {
-        elBadgeHumi.textContent = "DRY / LOW";
-        elBadgeHumi.className = "badge mc-badge badge-warning";
+        elBadgeHumi.textContent = "LOW HUMI";
+        elBadgeHumi.className = "pixel-tag badge-warning";
       } else {
-        elBadgeHumi.textContent = "OPTIMAL";
-        elBadgeHumi.className = "badge mc-badge badge-success";
+        elBadgeHumi.textContent = "BALANCED";
+        elBadgeHumi.className = "pixel-tag badge-success";
       }
     }
 
@@ -191,17 +190,17 @@ document.addEventListener("DOMContentLoaded", () => {
       sessionStats.lightMin = Math.min(sessionStats.lightMin, light);
       sessionStats.lightMax = Math.max(sessionStats.lightMax, light);
       elValLight.textContent = light;
-      elMinMaxLight.textContent = `MIN:${sessionStats.lightMin} MAX:${sessionStats.lightMax}`;
+      elMinMaxLight.textContent = `MIN: ${sessionStats.lightMin} lx | MAX: ${sessionStats.lightMax} lx`;
 
       if (light < 250) {
-        elBadgeLight.textContent = "DARK / CAVE";
-        elBadgeLight.className = "badge mc-badge badge-neutral";
+        elBadgeLight.textContent = "DIM LIGHT";
+        elBadgeLight.className = "pixel-tag badge-neutral";
       } else if (light > 800) {
-        elBadgeLight.textContent = "DAYLIGHT";
-        elBadgeLight.className = "badge mc-badge badge-warning";
+        elBadgeLight.textContent = "BRIGHT SUN";
+        elBadgeLight.className = "pixel-tag badge-warning";
       } else {
-        elBadgeLight.textContent = "TORCHLIGHT";
-        elBadgeLight.className = "badge mc-badge badge-success";
+        elBadgeLight.textContent = "WELL-LIT";
+        elBadgeLight.className = "pixel-tag badge-success";
       }
     }
 
@@ -256,14 +255,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (diff <= IOT_CONFIG.offlineThresholdSeconds) {
       elDeviceStatusBadge.textContent = "ONLINE";
-      elDeviceStatusBadge.className = "badge mc-badge badge-success";
+      elDeviceStatusBadge.className = "pixel-tag badge-success";
       elRelativeTime.textContent = diff <= 1 ? "Just now" : `${diff}s ago`;
       elRelativeTime.className = "text-emerald";
     } else {
-      elDeviceStatusBadge.textContent = "OFFLINE";
-      elDeviceStatusBadge.className = "badge mc-badge badge-danger";
+      elDeviceStatusBadge.textContent = "STALE / OFFLINE";
+      elDeviceStatusBadge.className = "pixel-tag badge-danger";
       elRelativeTime.textContent = formatDuration(diff) + " ago";
-      elRelativeTime.className = "text-redstone";
+      elRelativeTime.className = "text-amber";
     }
   }
 
@@ -284,7 +283,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // -------------------------------------------------------------
-  // 6-Column History Table Renderer (Minecraft Chest Grid)
+  // 6-Column History Table Renderer
   // -------------------------------------------------------------
 
   function renderHistoryTable(data) {
@@ -293,7 +292,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!data || data.length === 0) {
       elHistoryTableBody.innerHTML = `
         <tr>
-          <td colspan="6" class="text-center py-6 mc-subfont" style="text-align:center; padding: 24px; color: #777;">
+          <td colspan="6" class="text-center py-6 text-muted" style="text-align:center; padding: 28px;">
             <i class="fas fa-inbox me-2"></i>No historical telemetry records found in Firebase RTDB
           </td>
         </tr>`;
@@ -305,25 +304,25 @@ document.addEventListener("DOMContentLoaded", () => {
     elHistoryTableBody.innerHTML = reversed.map((row) => {
       const ts = row.timestamp ? parseInt(row.timestamp, 10) : null;
       const formattedDate = ts ? new Date(ts * 1000).toLocaleString() : "Unknown";
-      const temp = row.temp !== undefined ? `${parseFloat(row.temp).toFixed(1)}°C` : "--";
-      const humi = row.humi !== undefined ? `${parseFloat(row.humi).toFixed(1)}%` : "--";
-      const light = row.light !== undefined ? `${parseInt(row.light, 10)}lx` : "--";
+      const temp = row.temp !== undefined ? `${parseFloat(row.temp).toFixed(1)} °C` : "--";
+      const humi = row.humi !== undefined ? `${parseFloat(row.humi).toFixed(1)} %` : "--";
+      const light = row.light !== undefined ? `${parseInt(row.light, 10)} lx` : "--";
 
       // Derived presentation status for row
-      let statusBadge = `<span class="badge mc-badge badge-success">HEALTHY</span>`;
+      let statusBadge = `<span class="pixel-tag badge-success">HEALTHY</span>`;
       if (row.temp > 33.0) {
-        statusBadge = `<span class="badge mc-badge badge-danger">HIGH TEMP</span>`;
+        statusBadge = `<span class="pixel-tag badge-danger">HIGH TEMP</span>`;
       } else if (row.humi > 75.0) {
-        statusBadge = `<span class="badge mc-badge badge-info">HIGH HUMI</span>`;
+        statusBadge = `<span class="pixel-tag badge-cyan">HIGH HUMI</span>`;
       }
 
       return `
         <tr>
-          <td><span class="mc-font text-diamond"><i class="fas fa-microchip me-1"></i>${IOT_CONFIG.deviceId}</span></td>
-          <td class="mc-number">${formattedDate}</td>
-          <td class="mc-number text-redstone">${temp}</td>
-          <td class="mc-number text-lapis">${humi}</td>
-          <td class="mc-number text-gold">${light}</td>
+          <td><span class="pixel-tag badge-cyan"><i class="fas fa-microchip me-1"></i>${IOT_CONFIG.deviceId}</span></td>
+          <td class="mono-text">${formattedDate}</td>
+          <td class="mono-text text-redstone" style="font-weight:600;">${temp}</td>
+          <td class="mono-text text-cyan" style="font-weight:600;">${humi}</td>
+          <td class="mono-text text-amber" style="font-weight:600;">${light}</td>
           <td>${statusBadge}</td>
         </tr>
       `;
@@ -338,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cards = document.querySelectorAll(".kpi-card");
     cards.forEach(c => {
       c.classList.add("flash-update");
-      setTimeout(() => c.classList.remove("flash-update"), 400);
+      setTimeout(() => c.classList.remove("flash-update"), 500);
     });
   }
 
@@ -497,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       btnSendMock.disabled = true;
       btnSendMock.innerHTML = `<i class="fas fa-spinner fa-spin me-1"></i>SENDING...`;
-      appendSimLog(`[L5] Trigger Dual REST: Temp=${temp}°C, Humi=${humi}%, Light=${light}lx`);
+      appendSimLog(`[L5] Dispatch Dual REST: Temp=${temp}°C, Humi=${humi}%, Light=${light}lx`);
 
       try {
         const res = await firebaseService.simulateEsp32Upload(temp, humi, light);
@@ -510,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showToast("Simulation error: Check database URL and rules", "error");
       } finally {
         btnSendMock.disabled = false;
-        btnSendMock.innerHTML = `<i class="fas fa-paper-plane me-1"></i>SEND L5`;
+        btnSendMock.innerHTML = `<i class="fas fa-paper-plane me-1"></i>SEND L5 PAYLOAD`;
       }
     });
   }
@@ -518,12 +517,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function appendSimLog(msg) {
     if (!simLog) return;
     const time = new Date().toLocaleTimeString([], { hour12: false });
-    simLog.innerHTML += `<div><span style="color:#777;">[${time}]</span> ${msg}</div>`;
+    simLog.innerHTML += `<div><span class="text-muted">[${time}]</span> ${msg}</div>`;
     simLog.scrollTop = simLog.scrollHeight;
   }
 });
 
-// Toast notification helper (Minecraft Achievement Popup)
+// Toast notification helper
 function showToast(message, type = "info") {
   const container = document.getElementById("toastContainer");
   if (!container) return;
@@ -531,7 +530,7 @@ function showToast(message, type = "info") {
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
   toast.innerHTML = `
-    <i class="fas ${type === 'success' ? 'fa-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'} me-2"></i>
+    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'} me-2"></i>
     <span>${message}</span>
   `;
   container.appendChild(toast);
