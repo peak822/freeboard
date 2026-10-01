@@ -62,6 +62,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let latestData = null;
   let historyData = [];
   let connectionStatus = "connecting";
+  let activeDeviceId = IOT_CONFIG.activeDeviceId || "esp32-01";
+  let currentTableLimit = 50; // Default: 50 records (0 = All)
   let sessionStats = {
     tempMin: Infinity,
     tempMax: -Infinity,
@@ -100,6 +102,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const elRecordCount = document.getElementById("recordCount");
   const elEmptyState = document.getElementById("emptyState");
   const elLoadingOverlay = document.getElementById("loadingOverlay");
+  const elTableLimitSelect = document.getElementById("tableLimitSelect");
+  const elTableDeviceSelect = document.getElementById("tableDeviceSelect");
+
+  // Diagnostics DOM Elements
+  const elDiagModal = document.getElementById("diagnosticsModal");
+  const elBtnOpenDiag = document.getElementById("btnOpenDiag");
+  const elBtnCloseDiag = document.getElementById("btnCloseDiag");
+  const elBtnCloseDiagFooter = document.getElementById("btnCloseDiagFooter");
+  const elDiagDevicesCount = document.getElementById("diagDevicesCount");
+  const elDiagHistoryReceived = document.getElementById("diagHistoryReceived");
+  const elDiagValidCount = document.getElementById("diagValidCount");
+  const elDiagIncompleteCount = document.getElementById("diagIncompleteCount");
+  const elDiagDisplayedCount = document.getElementById("diagDisplayedCount");
+  const elDiagFilteredCount = document.getElementById("diagFilteredCount");
+  const elDiagActivePath = document.getElementById("diagActivePath");
+  const elDiagLatestPath = document.getElementById("diagLatestPath");
+  const elDiagHistoryPath = document.getElementById("diagHistoryPath");
+  const elDiagLastSync = document.getElementById("diagLastSync");
 
   // -------------------------------------------------------------
   // Theme Switching (Light Mode vs Dark Mode)
@@ -151,6 +171,28 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => playPixelSound("click"));
   });
 
+  // Table limit change handler
+  if (elTableLimitSelect) {
+    elTableLimitSelect.addEventListener("change", (e) => {
+      currentTableLimit = parseInt(e.target.value, 10);
+      playPixelSound("click");
+      renderHistoryTable(historyData);
+    });
+  }
+
+  // Device selection change handler
+  if (elTableDeviceSelect) {
+    elTableDeviceSelect.addEventListener("change", (e) => {
+      const selected = e.target.value;
+      if (selected) {
+        activeDeviceId = selected;
+        firebaseService.selectDevice(selected);
+        playPixelSound("click");
+        showToast(`Switched telemetry view to ${selected}`, "info");
+      }
+    });
+  }
+
   // Initialize Firebase Service
   const config = getFirebaseConfig();
   populateSettingsForm(config);
@@ -167,8 +209,10 @@ document.addEventListener("DOMContentLoaded", () => {
     firebaseService.init(currentConfig, {
       onLatest: handleLatestUpdate,
       onHistory: handleHistoryUpdate,
+      onDevices: handleDevicesDiscovered,
       onStatus: handleStatusChange,
-      onError: handleError
+      onError: handleError,
+      onDiagnostics: handleDiagnosticsUpdate
     });
   }
 
@@ -178,7 +222,34 @@ document.addEventListener("DOMContentLoaded", () => {
   // Data Handlers
   // -------------------------------------------------------------
 
-  function handleLatestUpdate(data) {
+  function handleDevicesDiscovered(devices, currentActive) {
+    if (!elTableDeviceSelect || !devices) return;
+    elTableDeviceSelect.innerHTML = devices.map(d => 
+      `<option value="${d}" ${d === currentActive ? 'selected' : ''}>${d}</option>`
+    ).join("");
+    if (elDiagDevicesCount) elDiagDevicesCount.textContent = devices.length;
+  }
+
+  function handleDiagnosticsUpdate(diag) {
+    if (elDiagDevicesCount) elDiagDevicesCount.textContent = diag.devicesCount;
+    if (elDiagHistoryReceived) elDiagHistoryReceived.textContent = diag.totalHistoryReceived;
+    if (elDiagValidCount) elDiagValidCount.textContent = diag.validRecordsCount;
+    if (elDiagIncompleteCount) elDiagIncompleteCount.textContent = diag.incompleteRecordsCount;
+    if (elDiagFilteredCount) elDiagFilteredCount.textContent = diag.filteredCount || 0;
+    if (elDiagActivePath) elDiagActivePath.textContent = `/lab/${activeDeviceId}`;
+    if (elDiagLatestPath) elDiagLatestPath.textContent = `/lab/${activeDeviceId}/latest`;
+    if (elDiagHistoryPath) elDiagHistoryPath.textContent = `/lab/${activeDeviceId}/history`;
+    if (elDiagLastSync && diag.lastSyncTime) {
+      elDiagLastSync.textContent = diag.lastSyncTime.toLocaleTimeString("en-US", {
+        timeZone: IOT_CONFIG.timeZone || "Asia/Bangkok",
+        hour12: false
+      });
+    }
+  }
+
+  function handleLatestUpdate(data, deviceId) {
+    if (deviceId && deviceId !== activeDeviceId) return;
+
     if (!data) {
       if (historyData.length === 0) {
         showEmptyState(true);
@@ -189,19 +260,23 @@ document.addEventListener("DOMContentLoaded", () => {
     showEmptyState(false);
     latestData = data;
 
-    const temp = parseFloat(data.temp);
-    const humi = parseFloat(data.humi);
-    const light = parseInt(data.light, 10);
-    const ts = data.timestamp ? parseInt(data.timestamp, 10) : Math.floor(Date.now() / 1000);
+    const hasTemp = data.temp !== undefined && data.temp !== null && !isNaN(Number(data.temp));
+    const hasHumi = data.humi !== undefined && data.humi !== null && !isNaN(Number(data.humi));
+    const hasLight = data.light !== undefined && data.light !== null && !isNaN(Number(data.light));
+    const hasTs = data.timestamp !== undefined && data.timestamp !== null && !isNaN(Number(data.timestamp));
 
-    // Update Session Stats & 5-Segment Meters
-    if (!isNaN(temp)) {
+    const temp = hasTemp ? parseFloat(data.temp) : null;
+    const humi = hasHumi ? parseFloat(data.humi) : null;
+    const light = hasLight ? parseInt(data.light, 10) : null;
+    const ts = hasTs ? parseInt(data.timestamp, 10) : null;
+
+    // Update Temperature Card
+    if (temp !== null) {
       sessionStats.tempMin = Math.min(sessionStats.tempMin, temp);
       sessionStats.tempMax = Math.max(sessionStats.tempMax, temp);
       elValTemp.textContent = temp.toFixed(1);
       elMinMaxTemp.textContent = `MIN: ${sessionStats.tempMin.toFixed(1)}°C | MAX: ${sessionStats.tempMax.toFixed(1)}°C`;
       
-      // Update 5-segment meter (25-35°C range)
       const tempSegments = Math.min(5, Math.max(1, Math.round(((temp - 25) / 10) * 5)));
       updateMeter(elMeterTemp, tempSegments);
 
@@ -212,15 +287,19 @@ document.addEventListener("DOMContentLoaded", () => {
         elBadgeTemp.textContent = "OPTIMAL";
         elBadgeTemp.className = "pixel-tag badge-success";
       }
+    } else {
+      elValTemp.textContent = "N/A";
+      elBadgeTemp.textContent = "NO DATA";
+      elBadgeTemp.className = "pixel-tag badge-neutral";
     }
 
-    if (!isNaN(humi)) {
+    // Update Humidity Card
+    if (humi !== null) {
       sessionStats.humiMin = Math.min(sessionStats.humiMin, humi);
       sessionStats.humiMax = Math.max(sessionStats.humiMax, humi);
       elValHumi.textContent = humi.toFixed(1);
       elMinMaxHumi.textContent = `MIN: ${sessionStats.humiMin.toFixed(1)}% | MAX: ${sessionStats.humiMax.toFixed(1)}%`;
 
-      // Update 5-segment meter (50-80% range)
       const humiSegments = Math.min(5, Math.max(1, Math.round(((humi - 50) / 30) * 5)));
       updateMeter(elMeterHumi, humiSegments);
 
@@ -234,15 +313,19 @@ document.addEventListener("DOMContentLoaded", () => {
         elBadgeHumi.textContent = "BALANCED";
         elBadgeHumi.className = "pixel-tag badge-success";
       }
+    } else {
+      elValHumi.textContent = "N/A";
+      elBadgeHumi.textContent = "NO DATA";
+      elBadgeHumi.className = "pixel-tag badge-neutral";
     }
 
-    if (!isNaN(light)) {
+    // Update Light Card
+    if (light !== null) {
       sessionStats.lightMin = Math.min(sessionStats.lightMin, light);
       sessionStats.lightMax = Math.max(sessionStats.lightMax, light);
       elValLight.textContent = light;
       elMinMaxLight.textContent = `MIN: ${sessionStats.lightMin} lx | MAX: ${sessionStats.lightMax} lx`;
 
-      // Update 5-segment meter (100-1000 lx range)
       const lightSegments = Math.min(5, Math.max(1, Math.round(((light - 100) / 900) * 5)));
       updateMeter(elMeterLight, lightSegments);
 
@@ -256,13 +339,31 @@ document.addEventListener("DOMContentLoaded", () => {
         elBadgeLight.textContent = "WELL-LIT";
         elBadgeLight.className = "pixel-tag badge-success";
       }
+    } else {
+      elValLight.textContent = "N/A";
+      elBadgeLight.textContent = "NO DATA";
+      elBadgeLight.className = "pixel-tag badge-neutral";
     }
 
-    // Timestamp formatting
-    const date = new Date(ts * 1000);
-    elLastSeen.textContent = date.toLocaleTimeString([], { hour12: false });
-    
-    evaluateDeviceStatus(ts);
+    // Timestamp formatting in Asia/Bangkok timezone
+    if (ts !== null) {
+      const date = new Date(ts * 1000);
+      try {
+        elLastSeen.textContent = date.toLocaleTimeString("en-US", { 
+          timeZone: IOT_CONFIG.timeZone || "Asia/Bangkok", 
+          hour12: false 
+        });
+      } catch (e) {
+        elLastSeen.textContent = date.toLocaleTimeString([], { hour12: false });
+      }
+      evaluateDeviceStatus(ts);
+    } else {
+      elLastSeen.textContent = "N/A";
+      elRelativeTime.textContent = "No Timestamp";
+      elDeviceStatusBadge.textContent = "STANDBY";
+      elDeviceStatusBadge.className = "pixel-tag badge-neutral";
+    }
+
     triggerCardFlash();
   }
 
@@ -278,15 +379,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function handleHistoryUpdate(historyArray) {
+  function handleHistoryUpdate(historyArray, deviceId) {
+    if (deviceId && deviceId !== activeDeviceId) return;
+
     historyData = historyArray || [];
-    elRecordCount.textContent = `${historyData.length} RECS`;
 
     if (historyData.length > 0) {
       showEmptyState(false);
     }
 
-    // Update Charts
+    // Update Charts (from same real Firebase history source)
     telemetryCharts.updateData(historyData);
 
     // Render 6-Column History Table
@@ -316,6 +418,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------------------------------------------
 
   function evaluateDeviceStatus(timestampSeconds) {
+    if (!timestampSeconds) return;
     const nowSeconds = Math.floor(Date.now() / 1000);
     const diff = nowSeconds - timestampSeconds;
 
@@ -356,6 +459,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!elHistoryTableBody) return;
 
     if (!data || data.length === 0) {
+      elRecordCount.textContent = "0 RECS";
+      if (elDiagDisplayedCount) elDiagDisplayedCount.textContent = 0;
       elHistoryTableBody.innerHTML = `
         <tr>
           <td colspan="6" class="text-center py-6 text-muted" style="text-align:center; padding: 28px;">
@@ -365,26 +470,68 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const reversed = [...data].reverse().slice(0, 50);
+    // Apply configurable limit (0 = Unlimited)
+    const reversed = [...data].reverse();
+    const displayed = (currentTableLimit > 0) ? reversed.slice(0, currentTableLimit) : reversed;
 
-    elHistoryTableBody.innerHTML = reversed.map((row) => {
-      const ts = row.timestamp ? parseInt(row.timestamp, 10) : null;
-      const formattedDate = ts ? new Date(ts * 1000).toLocaleString() : "Unknown";
-      const temp = row.temp !== undefined ? `${parseFloat(row.temp).toFixed(1)} °C` : "--";
-      const humi = row.humi !== undefined ? `${parseFloat(row.humi).toFixed(1)} %` : "--";
-      const light = row.light !== undefined ? `${parseInt(row.light, 10)} lx` : "--";
+    // Explicit record badge
+    if (currentTableLimit > 0 && data.length > currentTableLimit) {
+      elRecordCount.textContent = `Showing latest ${displayed.length} of ${data.length} RECS`;
+    } else {
+      elRecordCount.textContent = `${data.length} of ${data.length} RECS`;
+    }
+
+    if (elDiagDisplayedCount) elDiagDisplayedCount.textContent = displayed.length;
+
+    elHistoryTableBody.innerHTML = displayed.map((row) => {
+      const ts = (row.timestamp !== null && row.timestamp !== undefined && !isNaN(row.timestamp)) 
+        ? Number(row.timestamp) 
+        : null;
+
+      let formattedDate = "N/A (No SNTP)";
+      if (ts !== null) {
+        const d = new Date(ts * 1000);
+        try {
+          formattedDate = d.toLocaleString("en-US", {
+            timeZone: IOT_CONFIG.timeZone || "Asia/Bangkok",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false
+          });
+        } catch (e) {
+          formattedDate = d.toLocaleString();
+        }
+      }
+
+      const temp = (row.temp !== null && row.temp !== undefined && !isNaN(row.temp)) 
+        ? `${parseFloat(row.temp).toFixed(1)} °C` 
+        : `<span class="text-muted">N/A</span>`;
+
+      const humi = (row.humi !== null && row.humi !== undefined && !isNaN(row.humi)) 
+        ? `${parseFloat(row.humi).toFixed(1)} %` 
+        : `<span class="text-muted">N/A</span>`;
+
+      const light = (row.light !== null && row.light !== undefined && !isNaN(row.light)) 
+        ? `${parseInt(row.light, 10)} lx` 
+        : `<span class="text-muted">N/A</span>`;
 
       // Derived presentation status for row
       let statusBadge = `<span class="pixel-tag badge-success">HEALTHY</span>`;
-      if (row.temp > 33.0) {
+      if (row.temp !== null && row.temp > 33.0) {
         statusBadge = `<span class="pixel-tag badge-danger">HIGH TEMP</span>`;
-      } else if (row.humi > 75.0) {
+      } else if (row.humi !== null && row.humi > 75.0) {
         statusBadge = `<span class="pixel-tag badge-cyan">HIGH HUMI</span>`;
+      } else if (row.temp === null || row.humi === null || row.light === null || ts === null) {
+        statusBadge = `<span class="pixel-tag badge-neutral">PARTIAL (L3)</span>`;
       }
 
       return `
         <tr>
-          <td><span class="pixel-tag badge-cyan"><i class="fas fa-microchip me-1"></i>${IOT_CONFIG.deviceId}</span></td>
+          <td><span class="pixel-tag badge-cyan"><i class="fas fa-microchip me-1"></i>${row.deviceId || activeDeviceId}</span></td>
           <td class="mono-text">${formattedDate}</td>
           <td class="mono-text text-redstone" style="font-weight:700;">${temp}</td>
           <td class="mono-text text-cyan" style="font-weight:700;">${humi}</td>
@@ -432,6 +579,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // -------------------------------------------------------------
+  // Diagnostics Modal Handlers
+  // -------------------------------------------------------------
+  if (elBtnOpenDiag) {
+    elBtnOpenDiag.addEventListener("click", () => {
+      if (elDiagModal) elDiagModal.classList.add("modal-show");
+      playPixelSound("pop");
+    });
+  }
+
+  if (elBtnCloseDiag) {
+    elBtnCloseDiag.addEventListener("click", () => {
+      if (elDiagModal) elDiagModal.classList.remove("modal-show");
+    });
+  }
+
+  if (elBtnCloseDiagFooter) {
+    elBtnCloseDiagFooter.addEventListener("click", () => {
+      if (elDiagModal) elDiagModal.classList.remove("modal-show");
+    });
+  }
+
+  // -------------------------------------------------------------
   // CSV Export
   // -------------------------------------------------------------
   const btnExportCsv = document.getElementById("btnExportCsv");
@@ -442,11 +611,26 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      let csv = "Device ID,Timestamp (Unix),Datetime (ISO),Temperature (C),Humidity (%),Light (lx)\n";
+      let csv = "Device ID,Timestamp (Unix),Datetime (Asia/Bangkok),Temperature (C),Humidity (%),Light (lx),Status\n";
       historyData.forEach((row) => {
         const ts = row.timestamp || "";
-        const dateIso = ts ? new Date(ts * 1000).toISOString() : "";
-        csv += `"${IOT_CONFIG.deviceId}","${ts}","${dateIso}","${row.temp ?? ""}","${row.humi ?? ""}","${row.light ?? ""}"\n`;
+        let dateBangkok = "N/A";
+        if (ts) {
+          try {
+            dateBangkok = new Date(ts * 1000).toLocaleString("en-US", {
+              timeZone: IOT_CONFIG.timeZone || "Asia/Bangkok",
+              hour12: false
+            });
+          } catch (e) {
+            dateBangkok = new Date(ts * 1000).toISOString();
+          }
+        }
+        const temp = row.temp !== null && row.temp !== undefined ? row.temp : "N/A";
+        const humi = row.humi !== null && row.humi !== undefined ? row.humi : "N/A";
+        const light = row.light !== null && row.light !== undefined ? row.light : "N/A";
+        const status = (row.temp > 33.0) ? "HIGH TEMP" : (row.humi > 75.0) ? "HIGH HUMI" : "HEALTHY";
+
+        csv += `"${row.deviceId || activeDeviceId}","${ts}","${dateBangkok}","${temp}","${humi}","${light}","${status}"\n`;
       });
 
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -606,3 +790,4 @@ function showToast(message, type = "info") {
     setTimeout(() => toast.remove(), 300);
   }, 3500);
 }
+

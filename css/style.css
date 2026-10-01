@@ -833,6 +833,63 @@ body.cyber-mc-theme {
   to { transform: rotate(360deg); }
 }
 
+/* Form Select Cyber */
+.form-select-cyber {
+  padding: 6px 12px;
+  background: var(--bg-slot);
+  border: var(--border-card);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-select-cyber:hover,
+.form-select-cyber:focus {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+}
+
+.form-select-cyber option {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* Diagnostic Box & Metrics */
+.diag-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.diag-stat-card {
+  background: var(--bg-slot);
+  border: var(--border-card);
+  border-radius: 6px;
+  padding: 12px;
+  text-align: center;
+}
+
+.diag-stat-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--neon-cyan);
+}
+
+.diag-stat-label {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
 /* Scrollbars */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: var(--bg-space); }
@@ -843,7 +900,8 @@ body.cyber-mc-theme {
 @media (max-width: 768px) {
   .app-container { padding: 12px; }
   .dashboard-header { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .header-status-group { width: 100%; justify-content: space-between; }
+  .header-status-group { width: 100%; justify-content: space-between; flex-wrap: wrap; }
   .kpi-grid { grid-template-columns: 1fr; }
   .drawer { width: 100vw; }
 }
+

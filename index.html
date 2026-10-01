@@ -70,6 +70,11 @@
         </button>
 
         <!-- Action Controls -->
+        <button class="btn btn-cyber" id="btnOpenDiag" title="View Firebase Telemetry Pipeline Diagnostics">
+          <i class="fas fa-stethoscope text-cyan"></i>
+          <span>DIAGNOSTICS</span>
+        </button>
+
         <button class="btn btn-cyber" id="btnOpenSettings" title="Configure Firebase Database URL">
           <i class="fas fa-sliders text-amber"></i>
           <span>SETTINGS</span>
@@ -227,7 +232,27 @@
           <span>HISTORICAL SENSOR STREAM</span>
           <span class="pixel-tag badge-cyan ms-2" id="recordCount">0 RECS</span>
         </div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <!-- Dynamic Device Selector -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label class="form-label" style="margin-bottom: 0; font-size: 9px;" for="tableDeviceSelect">NODE:</label>
+            <select id="tableDeviceSelect" class="form-select-cyber" title="Select Active ESP32 Node">
+              <option value="esp32-01">esp32-01</option>
+            </select>
+          </div>
+
+          <!-- Configurable Table Limit Selector -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <label class="form-label" style="margin-bottom: 0; font-size: 9px;" for="tableLimitSelect">LIMIT:</label>
+            <select id="tableLimitSelect" class="form-select-cyber" title="Table Display Limit">
+              <option value="10">10 RECS</option>
+              <option value="25">25 RECS</option>
+              <option value="50" selected>50 RECS</option>
+              <option value="100">100 RECS</option>
+              <option value="0">ALL RECS</option>
+            </select>
+          </div>
+
           <button class="btn btn-cyber" id="btnExportCsv">
             <i class="fas fa-download text-amber me-1"></i>
             <span>EXPORT CSV</span>
@@ -240,7 +265,7 @@
           <thead>
             <tr>
               <th><i class="fas fa-hashtag me-1 text-cyan"></i>DEVICE ID</th>
-              <th><i class="far fa-clock me-1 text-muted"></i>TIMESTAMP (SNTP)</th>
+              <th><i class="far fa-clock me-1 text-muted"></i>TIMESTAMP (SNTP - ASIA/BANGKOK)</th>
               <th><i class="fas fa-temperature-half me-1 text-redstone"></i>TEMPERATURE</th>
               <th><i class="fas fa-water me-1 text-cyan"></i>HUMIDITY</th>
               <th><i class="fas fa-lightbulb me-1 text-amber"></i>LIGHT</th>
@@ -258,6 +283,56 @@
       </div>
     </section>
 
+  </div>
+
+  <!-- Diagnostics Modal Dialog -->
+  <div class="modal-overlay" id="diagnosticsModal">
+    <div class="modal-content cyber-card" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fas fa-stethoscope me-2 text-cyan"></i>FIREBASE PIPELINE DIAGNOSTICS</h3>
+        <button class="btn-close-cyber" id="btnCloseDiag">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="diag-grid">
+          <div class="diag-stat-card">
+            <div class="diag-stat-value" id="diagDevicesCount">1</div>
+            <div class="diag-stat-label">DETECTED DEVICES</div>
+          </div>
+          <div class="diag-stat-card">
+            <div class="diag-stat-value" id="diagHistoryReceived">0</div>
+            <div class="diag-stat-label">RECORDS RECEIVED</div>
+          </div>
+          <div class="diag-stat-card">
+            <div class="diag-stat-value text-emerald" id="diagValidCount">0</div>
+            <div class="diag-stat-label">VALID (ALL FIELDS)</div>
+          </div>
+          <div class="diag-stat-card">
+            <div class="diag-stat-value text-amber" id="diagIncompleteCount">0</div>
+            <div class="diag-stat-label">INCOMPLETE / N/A</div>
+          </div>
+          <div class="diag-stat-card">
+            <div class="diag-stat-value text-cyan" id="diagDisplayedCount">0</div>
+            <div class="diag-stat-label">DISPLAYED</div>
+          </div>
+          <div class="diag-stat-card">
+            <div class="diag-stat-value text-muted" id="diagFilteredCount">0</div>
+            <div class="diag-stat-label">FILTERED OUT</div>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-slot); border: var(--border-card); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 11px; line-height: 1.8;">
+          <div><strong class="text-cyan">Firebase Root:</strong> <code>/lab</code></div>
+          <div><strong class="text-cyan">Active Device Path:</strong> <code id="diagActivePath">/lab/esp32-01</code></div>
+          <div><strong class="text-cyan">Latest Telemetry Node:</strong> <code id="diagLatestPath">/lab/esp32-01/latest</code></div>
+          <div><strong class="text-cyan">History Log Node:</strong> <code id="diagHistoryPath">/lab/esp32-01/history</code></div>
+          <div><strong class="text-cyan">Timezone:</strong> <code>Asia/Bangkok (UTC+07:00)</code></div>
+          <div><strong class="text-cyan">Last Sync:</strong> <span id="diagLastSync">Just now</span></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary-cyber" id="btnCloseDiagFooter">CLOSE</button>
+      </div>
+    </div>
   </div>
 
   <!-- Settings Modal Dialog -->

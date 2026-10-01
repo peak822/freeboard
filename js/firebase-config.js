@@ -19,12 +19,17 @@ const DEFAULT_FIREBASE_CONFIG = {
 
 // Device & Target Path Configuration
 const IOT_CONFIG = {
-  deviceId: "esp32-01",
-  basePath: "/lab/esp32-01",
+  baseLabPath: "/lab",
+  defaultDeviceId: "esp32-01",
+  activeDeviceId: "esp32-01",
   latestPath: "/lab/esp32-01/latest",
   historyPath: "/lab/esp32-01/history",
+  // Query limit from Firebase (0 = unlimited)
+  queryLimit: 200,
   // Offline threshold in seconds (e.g. if no packet within 30s, mark as STALE / OFFLINE)
-  offlineThresholdSeconds: 30
+  offlineThresholdSeconds: 30,
+  // Timezone display requirement
+  timeZone: "Asia/Bangkok"
 };
 
 // Clean & sanitize Firebase URL if user accidentally pastes Firebase Console URL

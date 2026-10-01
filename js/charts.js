@@ -189,18 +189,28 @@ class TelemetryCharts {
   updateDatasets() {
     if (!this.chart) return;
 
-    // Take latest 30 records for chart visualization
+    // Take latest 30 records for chart visualization (or all if fewer)
     const records = this.historyData.slice(-30);
 
     const labels = records.map((item) => {
-      if (!item.timestamp) return "--:--:--";
+      if (!item.timestamp || isNaN(item.timestamp)) return "N/A";
       const d = new Date(item.timestamp * 1000);
-      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+      try {
+        return d.toLocaleTimeString("en-US", { 
+          timeZone: IOT_CONFIG.timeZone || "Asia/Bangkok", 
+          hour: "2-digit", 
+          minute: "2-digit", 
+          second: "2-digit", 
+          hour12: false 
+        });
+      } catch (e) {
+        return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+      }
     });
 
-    const tempData = records.map((item) => (item.temp !== undefined ? item.temp : null));
-    const humiData = records.map((item) => (item.humi !== undefined ? item.humi : null));
-    const lightData = records.map((item) => (item.light !== undefined ? item.light : null));
+    const tempData = records.map((item) => (item.temp !== undefined && item.temp !== null ? item.temp : null));
+    const humiData = records.map((item) => (item.humi !== undefined && item.humi !== null ? item.humi : null));
+    const lightData = records.map((item) => (item.light !== undefined && item.light !== null ? item.light : null));
 
     const isLight = this.currentTheme === "light";
     const redstoneColor = isLight ? "#dc2626" : "#ff3355";
