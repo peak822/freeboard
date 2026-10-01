@@ -68,6 +68,33 @@ sensor:
     lambda: |-
       return 100.0 + random_float() * 900.0;
 
+  - platform: template
+    name: "Air Pressure"
+    id: press
+    unit_of_measurement: "hPa"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      return 950.0 + random_float() * 100.0;
+
+  - platform: template
+    name: "Carbon Dioxide"
+    id: co2
+    unit_of_measurement: "ppm"
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: |-
+      return 400.0 + random_float() * 800.0;
+
+  - platform: template
+    name: "Sound Noise"
+    id: noise
+    unit_of_measurement: "dB"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      return 30.0 + random_float() * 60.0;
+
 interval:
   - interval: 10s
     then:
@@ -76,8 +103,8 @@ interval:
             lambda: 'return wifi::global_wifi_component->is_connected() && id(sntp_time).now().is_valid();'
           then:
             - logger.log:
-                format: "Send temp=%.1f humi=%.1f light=%.0f"
-                args: ['id(temp).state', 'id(humi).state', 'id(light).state']
+                format: "Send temp=%.1f humi=%.1f light=%.0f press=%.1f co2=%.0f noise=%.1f"
+                args: ['id(temp).state', 'id(humi).state', 'id(light).state', 'id(press).state', 'id(co2).state', 'id(noise).state']
 
             # 1. Update Latest State (PUT)
             - http_request.put:
@@ -86,6 +113,9 @@ interval:
                   root["temp"] = id(temp).state;
                   root["humi"] = id(humi).state;
                   root["light"] = id(light).state;
+                  root["press"] = id(press).state;
+                  root["co2"] = id(co2).state;
+                  root["noise"] = id(noise).state;
                   root["timestamp"] = id(sntp_time).now().timestamp;
                 on_response:
                   then:
@@ -100,6 +130,9 @@ interval:
                   root["temp"] = id(temp).state;
                   root["humi"] = id(humi).state;
                   root["light"] = id(light).state;
+                  root["press"] = id(press).state;
+                  root["co2"] = id(co2).state;
+                  root["noise"] = id(noise).state;
                   root["timestamp"] = id(sntp_time).now().timestamp;
                 on_response:
                   then:
@@ -108,3 +141,4 @@ interval:
                         args: ['status_code']
           else:
             - logger.log: "Skip Firebase: WiFi or time not ready"
+

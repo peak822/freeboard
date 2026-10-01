@@ -75,6 +75,39 @@ sensor:
       ESP_LOGD("sensor.light", "Simulated Light: %.0f lx", val);
       return roundf(val);
 
+  - platform: template
+    name: "Air Pressure"
+    id: press
+    unit_of_measurement: "hPa"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      float val = 950.0 + random_float() * 100.0;
+      ESP_LOGD("sensor.press", "Simulated Press: %.1f hPa", val);
+      return val;
+
+  - platform: template
+    name: "Carbon Dioxide"
+    id: co2
+    unit_of_measurement: "ppm"
+    accuracy_decimals: 0
+    update_interval: 5s
+    lambda: |-
+      float val = 400.0 + random_float() * 800.0;
+      ESP_LOGD("sensor.co2", "Simulated CO2: %.0f ppm", val);
+      return roundf(val);
+
+  - platform: template
+    name: "Sound Noise"
+    id: noise
+    unit_of_measurement: "dB"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      float val = 30.0 + random_float() * 60.0;
+      ESP_LOGD("sensor.noise", "Simulated Noise: %.1f dB", val);
+      return val;
+
 # Cloud Firebase Upload Pipeline (Uploads latest state every 10 seconds)
 interval:
   - interval: 10s
@@ -84,14 +117,16 @@ interval:
             wifi.connected:
           then:
             - logger.log:
-                format: "Uploading latest data to Firebase: temp=%.1f°C, humi=%.1f%%, light=%.0flx -> /lab/esp32-01/latest"
-                args: ['id(temp).state', 'id(humi).state', 'id(light).state']
+                format: "Uploading latest 6-sensor data to Firebase -> /lab/esp32-01/latest"
             - http_request.put:
                 url: !secret firebase_latest_url
                 json: |-
                   root["temp"] = id(temp).state;
                   root["humi"] = id(humi).state;
                   root["light"] = id(light).state;
+                  root["press"] = id(press).state;
+                  root["co2"] = id(co2).state;
+                  root["noise"] = id(noise).state;
                 on_response:
                   then:
                     - if:
